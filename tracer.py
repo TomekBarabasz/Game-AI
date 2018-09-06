@@ -1,4 +1,18 @@
 from subprocess import run
+from itertools import count
+
+def num2Suites(cards, separator=' '):
+	suits = '♥♠♣♦'
+	values=['9','10','W','D','K','A']
+	return separator.join([ values[x//10-9]+suits[x%10-1] for x in cards])
+
+def move2str(move):
+	if move[0] == 'play':
+		return move[0] + ' ' + num2Suites(move[1])
+	elif move[0] == 'take':
+		return move[0] + ' ' + str(move[1])
+	elif move[0] == 'noop':
+		return move[0]
 
 class GameLogger:
 	class DummyLogger:
@@ -12,6 +26,7 @@ class GameLogger:
 	def log(self, *args):
 		self.fp.write( *args )	
 	def logState(self, state):
+		self.fp.write( 'state hash is {0}\n'.format(state.hash()))
 		self.fp.write( 'stack is {0}\n'.format(state.stack))
 		for hand,pi in zip(state.hand, count(0)):
 			self.fp.write( 'p{0} hand is {1}\n'.format(pi,hand))
@@ -138,7 +153,7 @@ def createTracer(args,type,pIdx):
 
 	Graph = args.get('graph',[])
 	if Graph is None: Graph=[]
-	print("Graph is",Graph)
+	else: print("Graph is",Graph)
 	graph = None
 	for g in Graph:
 		gg = g.split(' ')

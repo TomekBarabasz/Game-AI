@@ -3,20 +3,33 @@ from itertools import count
 from rules_python import GameRules
 from human_player import HumanGamePlayer
 from random_player import RandomGamePlayer, LowCardGamePlayer
-from minmax_player import createMinimaxPlayer
-from game_controller import GameController
+from minmax_player import createMinmaxPlayer
+from game_controller import GameController, EndCondition
 from tracer import createTracer, createLogger
 
 def createPlayer(type_,name,kwargs):
 	Type = type_.split(' ')
-	PlayerFactory = {'random':RandomGamePlayer, 'human':HumanGamePlayer, 'lowcard':LowCardGamePlayer, 'minimax':createMinimaxPlayer}
+	PlayerFactory = {'random':RandomGamePlayer, 'human':HumanGamePlayer, 'lowcard':LowCardGamePlayer, 'minmax':createMinmaxPlayer}
 	tracer = createTracer(kwargs,type_,name)
 	p = PlayerFactory[Type[0]](name,Type,tracer, kwargs)
 	return p
 
+def createEndCondition(Args):
+	if Args.confint is not None:
+		if Args.numgames.find(' ') > -1:
+			mingames,maxgames = map(int,Args.numgames.split(' '))
+		else:
+			maxgames = int(Args.numgames)
+		return EndCondition.createConfidenceIntervalBasedEndCondition(Args.confint, confidence=Args.conf, minLimit=1, maxLimit=maxgames)
+	else:
+		return EndCondition.createSimpleGameLimit(int(Args.numgames))
+
 def play(args):
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-numgames','-ng',		type=int, default=1, help='Number of games to play')
+	parser.add_argument('-numgames','-ng',		type=str, default="1", help='Number of games to play')
+	parser.add_argument('-confint','-ci',		type=float, help='Confidence interval limit')
+	parser.add_argument('-conf',					type=float, default=0.95, help='Confidence coefficient')
+	parser.add_argument('-confplot',	action='store_true')
 	parser.add_argument('-p1', type=str, help='player 1 type')	#choices=['random','minimax','human','lowcard']
 	parser.add_argument('-p2', type=str, help='player 2 type')
 	parser.add_argument('-p3', type=str, help='player 3 type')
@@ -27,6 +40,7 @@ def play(args):
 	parser.add_argument('-graph','-g',	type=str, nargs='+', help="filename for search graph")
 	parser.add_argument('-graphexe','-ge',	type=str, help="graphviz executable for graph creation, like dot or twopi")
 	parser.add_argument('-gamelog',type=str, help="filename for game logging")
+	parser.add_argument('-progress','-p',action='store_true')
 	Args = parser.parse_args(args)
 
 	players = {}
@@ -52,8 +66,19 @@ def play(args):
 	gc = GameController(rules, players)
 	logger = createLogger(Args.gamelog)
 	logger.log(typesDesc+'\n')
-	gc.run(Args.numgames, logger, Args.roundlimit)
-
+	endC = createEndCondition(Args)
+	gc.run(endC.end, logger, Args.progress, Args.roundlimit)
+	if Args.confplot:
+		#TODO: move to mesurements object
+		import matplotlib.pyplot as plt
+		plt.plot(endC.ci)
+		plt.xlabel('game number')
+		plt.ylabel('confidence interval length')
+		plt.suptitle("{0}% confidence interval".format(int(Args.conf*100)))
+		plt.show()
+	if Args.confint is not None:
+		print('Final Conf int	:', round(endC.ci[-1],2))
+	
 def test(args):
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-trace','-t',	type=int, default=0,help="enable console tracing")

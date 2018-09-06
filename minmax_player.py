@@ -179,7 +179,7 @@ class MinMaxFullSearchGamePlayer_2P:
 		self.tracer.traceNode( Node(name=stateName, bestValue=bestV, bestMove=bestM, state = state))
 		return bestM, bestV
 
-def createMinimaxPlayer(name,Type,tracer,args):
+def createMinmaxPlayer(name,Type,tracer,args):
 	from minmax_ab_player import MinMaxAlphaBetaGamePlayer_2P
 	#Type[0] : basic type
 	#Type[1] : dx #depth

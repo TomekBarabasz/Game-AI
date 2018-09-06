@@ -1,5 +1,6 @@
 from minmax_player import Node
 from itertools import count
+#from copy import deepcopy
 
 class MinMaxAlphaBetaGamePlayer_2P:
 	def __init__(self, name, maxDepth, tracer, evalFunc):
@@ -22,6 +23,10 @@ class MinMaxAlphaBetaGamePlayer_2P:
 		self.tracer.restart(self.name)		
 		self.tracer.trace('---start calc move #{0}---'.format(self.moveNbr))
 		self.nodesVisited = 0
+		#state = deepcopy(rules.state)
+		#state.name = [1]
+		#state.alpha=-101
+		#state.beta=101
 		mv,_ = self.calcMoveRec(rules.state, self.name, [1], -101, 101)
 		self.tracer.trace('visited {0} nodes'.format(self.nodesVisited))
 		self.tracer.close()

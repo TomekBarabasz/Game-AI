@@ -1,25 +1,13 @@
 import sys
 from msvcrt import getch
 from itertools import count
+from tracer import num2Suites, move2str
 
 def wait():
 	print('press any key to continue...')
 	c = getch()
 	if c == b'\x03':
 		raise KeyboardInterrupt
-
-def num2Suites(cards):
-	suits = '♥♠♣♦'
-	values=['9','10','W','D','K','A']
-	return ' '.join([ values[x//10-9]+suits[x%10-1] for x in cards])
-
-def move2str(move):
-	if move[0] == 'play':
-		return move[0] + ' ' + num2Suites(move[1])
-	elif move[0] == 'take':
-		return move[0] + ' ' + str(move[1])
-	elif move[0] == 'noop':
-		return move[0]
 
 class HumanGamePlayer:
 	def __init__(self, name, *a):

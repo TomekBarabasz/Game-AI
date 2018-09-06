@@ -2,23 +2,37 @@ from random import shuffle
 from bisect import bisect_left,bisect_right
 from itertools import count
 from copy import copy,deepcopy
+from functools import reduce
 
 class GameRules:
+	
 	class State:
-		pass
+		def __init__(self):
+			self.stack=[]
+			self.hand=[]
+			self.known=[]
+			self.current = 0
 
+		def hash(self):
+			def subhash(cardlist):
+				return reduce(lambda x,y : x | GameRules.HashMask[y], cardlist, 0)
+			
+			h0 = str( subhash(self.stack) )
+			h1 = ''.join( [str(subhash(ph)) for ph in self.hand] )
+			h2 = str(self.current)
+			return h0+h1+h2
+		
 	def __init__(self):
 		self.ActionMap = {'noop' : GameRules.actionNoop, 'play' : GameRules.actionPlay, 'take' : GameRules.actionTake }
-	
+		allcards = [kn*10+ks for kn in range(9,15) for ks in range(1,5)]
+		GameRules.HashMask = { v:1<<i for v,i in zip(allcards,count(0)) }
+
 	def start(self, numPlayers,allcards=None):
 		#fluents : stack : list, hand : list, known : list
 		state = GameRules.State()
-		state.stack=[]
-		state.hand=[]
-		state.known=[]
 		self.numPlayers = numPlayers
 		if allcards is None:
-			allcards = [ kn*10+ks for kn in range(9,15) for ks in range(1,5) ]
+			allcards = [kn*10+ks for kn in range(9,15) for ks in range(1,5)]
 		shuffle(allcards)
 		numCardsPerPlayer = len(allcards) // numPlayers
 		for pn in range(0,numPlayers):
