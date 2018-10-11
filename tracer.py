@@ -33,6 +33,7 @@ class GameLogger:
 
 class Tracer:
 	def __init__(self):pass
+	def enabled(self):return False
 	def traceNode(self,node):pass
 	def traceEdge(self, from_, to_, label):pass
 	def trace(self, *txt):pass
@@ -42,6 +43,7 @@ class Tracer:
 class ConsoleTracer(Tracer):
 	def __init__(self,lvl):
 		self.lvl = lvl
+	def enabled(self):return True
 	def traceNode(self, n):
 		print('player',n.state.current)
 		print('bestv=',n.bestValue)
@@ -58,6 +60,7 @@ class FileTracer(Tracer):
 		self.lvl = lvl
 		print('opening trace file',logfile)
 		self.fn = open(logfile,'w')
+	def enabled(self):return True
 	def traceNode(self, n):
 		text = 'backtracking node {0} bv {1}'.format(n.name, n.bestValue)
 		text += ' bm {0}\n'.format(n.bestMove) if hasattr(n, 'bestMove') else '\n'
@@ -74,7 +77,7 @@ class GraphTracer(Tracer):
 		self.name = name_
 		self.exe = exe
 		self.nodedesc = GraphTracer.nodeDescHtml if exe is not None else GraphTracer.nodeDesc
-
+	def enabled(self):return True
 	def restart(self,idxToHighlight):
 		self.calcnum += 1
 		self.fn = fn = self.path + '\\' + '{0}-{1}.gv'.format(self.name, self.calcnum)
@@ -128,6 +131,7 @@ class GraphTracer(Tracer):
 class CompositeTracer(Tracer):
 	def __init__(self, tracers):
 		self.tracers = tracers
+	def enabled(self):return True
 	def traceNode(self,n):	
 		for t in self.tracers: t.traceNode(n)
 	def traceEdge(self,f,to,l):
@@ -141,7 +145,7 @@ class CompositeTracer(Tracer):
 
 def createTracer(args,type,pIdx):
 	name = '{0}-p{1}'.format(type, pIdx)
-	Trace = args['trace']
+	Trace = args.get('trace',None)
 	if Trace is None: Trace=[]
 	trace = (0,None)
 	for t in Trace:
@@ -153,7 +157,7 @@ def createTracer(args,type,pIdx):
 
 	Graph = args.get('graph',[])
 	if Graph is None: Graph=[]
-	else: print("Graph is",Graph)
+	#else: print("Graph is",Graph)
 	graph = None
 	for g in Graph:
 		gg = g.split(' ')

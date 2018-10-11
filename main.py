@@ -6,8 +6,11 @@ from random_player import RandomGamePlayer, LowCardGamePlayer
 from minmax_player import createMinmaxPlayer
 from game_controller import GameController, EndCondition
 from tracer import createTracer, createLogger
+from datetime import datetime
+import multiprocessing
+import cProfile, pstats
 
-def createPlayer(type_,name,kwargs):
+def createPlayer(type_,name,**kwargs):
 	Type = type_.split(' ')
 	PlayerFactory = {'random':RandomGamePlayer, 'human':HumanGamePlayer, 'lowcard':LowCardGamePlayer, 'minmax':createMinmaxPlayer}
 	tracer = createTracer(kwargs,type_,name)
@@ -23,6 +26,40 @@ def createEndCondition(Args):
 		return EndCondition.createConfidenceIntervalBasedEndCondition(Args.confint, confidence=Args.conf, minLimit=1, maxLimit=maxgames)
 	else:
 		return EndCondition.createSimpleGameLimit(int(Args.numgames))
+
+def mergeResults(mpResults):
+	num_results = len(mpResults)
+	num_games = sum( [r['total_games'] for r in mpResults] )
+	avg_score = list(map(lambda x: sum(x)/num_results, zip(*[ r['avg_score'] for r in mpResults ])))
+	total_rounds = sum( [r['total_rounds'] for r in mpResults] )
+	avg_rounds = sum( [r['avg_rounds'] for r in mpResults] ) / num_results
+	avg_move_time = list(map(lambda x : sum(x)/num_results, zip(*[ r['avg_move_time'] for r in mpResults ])))
+	
+	result = { 	'total_games'	: num_games,
+					#'end_codes' 	: EndCodes,
+					'avg_score' 	: avg_score,
+					'total_rounds' : total_rounds,
+					'avg_rounds'	: avg_rounds,
+					'avg_move_time': avg_move_time
+				}
+	return result
+
+def updateNumgamesForMp(numgames, mp):
+	ng_i = map( lambda x: int(x)//mp, numgames.split(' '))
+	return ' '.join( map(str, ng_i) )
+
+def printResult(result):
+	print("Run Stats :")
+	print('Num games	: total {0}'.format(result['total_games']))
+	if 'end_codes' in result:
+		print('End codes	: {0}'.format(','.join([ '{0} {1}'.format(GameController.EndCodeNames[k],v) for k,v in result['end_codes'].items()] ) ))
+	print('Avg Score	: {0}'.format(' : '.join(map(str,result['avg_score']))))
+	print('Num rounds	: total {0} average rounds per game {1}'.format(result['total_rounds'], result['avg_rounds']))
+	print('Avg move time	:',result['avg_move_time'])
+	if 'exec_time' in result:
+		print('Total exec time	: {0} sec'.format( result['exec_time'] ))
+	if 'conf_interval' in result:
+		print('Final Conf int	:', round(result['conf_interval'],2))
 
 def play(args):
 	parser = argparse.ArgumentParser()
@@ -41,33 +78,55 @@ def play(args):
 	parser.add_argument('-graphexe','-ge',	type=str, help="graphviz executable for graph creation, like dot or twopi")
 	parser.add_argument('-gamelog',type=str, help="filename for game logging")
 	parser.add_argument('-progress','-p',action='store_true')
+	parser.add_argument('-mp',type=int, help="number of processess to spawn")
 	Args = parser.parse_args(args)
 
+	if Args.mp is None:
+		t0 = datetime.now()
+		result = Play(Args)
+		t1 = datetime.now()
+	else:
+		Results = []
+		t0 = datetime.now()
+		Args.numgames = updateNumgamesForMp(Args.numgames, Args.mp)
+		with multiprocessing.Pool(Args.mp) as p:
+			Results = p.map( Play, [Args]*Args.mp)
+			result = mergeResults(Results)
+		t1 = datetime.now()
+	result['exec_time'] = t1-t0
+	printResult(result)
+
+def Play(Args):
 	players = {}
 	verbose = Args.verbose
 	types = []
-	options = {}
 	for pn in range(0,4):
 		type = Args.__dict__['p{0}'.format(pn+1)]
 		if type is None: break
 		if type=='human' : verbose = True
 		types.append(type)
 
-	options = { 'trace' : Args.trace, 'graph' : Args.graph, 'graphexe' : Args.graphexe, 'numplayers' : len(types) }
 	for type,pn in zip(types,count(0)):
-		players[pn] = createPlayer(type,pn,options)
+		players[pn] = createPlayer(type,pn,trace=Args.trace, graph=Args.graph, graphexe=Args.graphexe, numplayers=len(types))
 
 	for p in players.values() :
 		p.verbose = verbose
 	
 	typesDesc = 'player types are ' + '/'.join(types)
-	print(typesDesc)
+	#print(typesDesc)
 	rules = GameRules()
 	gc = GameController(rules, players)
 	logger = createLogger(Args.gamelog)
 	logger.log(typesDesc+'\n')
 	endC = createEndCondition(Args)
-	gc.run(endC.end, logger, Args.progress, Args.roundlimit)
+	pr = cProfile.Profile()
+	pr.enable()
+	result = gc.run(endC, logger, Args.progress, Args.roundlimit)
+	pr.disable()
+	sortby = 'tottime'
+	ps = pstats.Stats(pr).sort_stats(sortby)
+	ps.print_stats()
+
 	if Args.confplot:
 		#TODO: move to mesurements object
 		import matplotlib.pyplot as plt
@@ -76,9 +135,8 @@ def play(args):
 		plt.ylabel('confidence interval length')
 		plt.suptitle("{0}% confidence interval".format(int(Args.conf*100)))
 		plt.show()
-	if Args.confint is not None:
-		print('Final Conf int	:', round(endC.ci[-1],2))
-	
+	return result
+
 def test(args):
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-trace','-t',	type=int, default=0,help="enable console tracing")

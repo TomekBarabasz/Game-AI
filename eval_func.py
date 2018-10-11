@@ -1,3 +1,5 @@
+from itertools import count
+
 def eval_numcardsonly(state):
 	#winning score is 100, so this must be up to 100, where higher is better
 	return [24 - len(h) for h in state.hand]
@@ -27,7 +29,7 @@ weights1 =  [[0,10,20,30,10],#9
 		return 100-sum( [weights[k-9][c] for k,c in cc.items()] )
 	return [ evhand(h) for h in state.hand ]"""
 
-def create_eval_weightand(weights):
+def create_eval_weightand_old(weights):
 	def eval_weightedHand(state):
 		def evhand(hand):
 			cc = {}
@@ -35,6 +37,20 @@ def create_eval_weightand(weights):
 				cn = c // 10
 				cc[cn] = cc.get(cn,0) + 1
 			return 100-sum( [weights[k-9][c] for k,c in cc.items()] )
+		return [ evhand(h) for h in state.hand ]
+	return eval_weightedHand
+
+def create_eval_weightand(weights):
+	def eval_weightedHand(state):
+		def evhand(hand):
+			cc = [0]*6
+			for c in hand:
+				cn = c // 10
+				cc[cn-9] += 1
+			acc = 0
+			#for k,c in zip(count(0), cc): acc += weights[k][c]
+			#return 100-acc
+			return 100-sum( [ weights[k][c] for k,c in zip(count(0), cc) ] )
 		return [ evhand(h) for h in state.hand ]
 	return eval_weightedHand
 

@@ -12,6 +12,8 @@ class EndCondition:
 			def end(self, score):
 				self.numGames += 1
 				return self.numGames >= self.limit
+			def getConfidenceInterval(self):
+				return None
 		return SimpleGameLimit(limit)
 
 	@staticmethod
@@ -51,7 +53,10 @@ class EndCondition:
 					return False
 				else:
 					return ci < self.conf_interval_limit or numGames > self.maxLimit
-		
+
+			def getConfidenceInterval(self):
+				return self.ci[-1]
+			
 		return ConfidenceIntervalBasedEndCondition(conf_interval_limit, confidence, minLimit, maxLimit)
 
 class GameController:
@@ -115,7 +120,7 @@ class GameController:
 		TotalRounds = 0
 		EndCodes = {}
 		AvgMoveTime = [0.0]*NumPlayers
-		t0 = datetime.now()
+		
 		for gn in count(1):
 			logger.log('\nstarting game {0}\n'.format(gn))
 			pb = ProgressBar(total=roundLimit,prefix='game_{0}'.format(gn), suffix='', decimals=0, length=roundLimit, fill='#') if showProgress else dummyProgressBar()
@@ -124,16 +129,23 @@ class GameController:
 			EndCodes[endCode] = EndCodes.get(endCode,0)+1
 			TotalScore = [ a+b for a,b in zip(TotalScore, score) ]
 			TotalRounds += roundsDone
-			if endCondition(score):
+			if endCondition.end(score):
 				break
-		t1 = datetime.now()
-		avgScore = [ str(round(s / gn,2)) for s in TotalScore ]
-		avgRounds = round(TotalRounds / gn, 2)
+
+		AvgScore    = [ round(s / gn,2) for s in TotalScore ]
+		avgRounds   = round(TotalRounds / gn, 2)
 		AvgMoveTime = [ round(a / gn, 5) for a in AvgMoveTime]
 
-		print("Run Stats :")
-		print('Num games	: total {0}, end codes : {1}'.format(gn, ','.join([ '{0} {1}'.format(GameController.EndCodeNames[k],v) for k,v in EndCodes.items()] ) ))
-		print('Avg Score	: {0}'.format(' : '.join(avgScore)))
-		print('Num rounds	: total {0} average rounds per game {1}'.format(TotalRounds, avgRounds))
-		print('Avg move time	:',AvgMoveTime)
-		print('Total exec time	: {0} sec'.format(t1-t0))
+		result = { 	'total_games'	: gn,
+						'end_codes' 	: EndCodes,
+						'avg_score' 	: AvgScore,
+						'total_rounds' : TotalRounds,
+						'avg_rounds'	: avgRounds,
+						'avg_move_time': AvgMoveTime,
+						}
+		ci = 	endCondition.getConfidenceInterval()
+		if ci is not None:
+			result['conf_interval'] = ci
+		return result
+		
+		

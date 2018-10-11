@@ -194,7 +194,7 @@ def createMinmaxPlayer(name,Type,tracer,args):
 	else:
 		from mc_player import MCGamePlayer_3P
 		P = MCGamePlayer_3P
-	print('creating player',name,'of type',P)
+	#print('creating player',name,'of type',P)
 	depth = int(Type[1][1:]) if len(Type) > 1 and Type[1].startswith('d') else 10
 	
 	ef = createEvalFunction(Type[2] if len(Type)>3 else 'nco')

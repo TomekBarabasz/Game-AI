@@ -2,7 +2,7 @@ from copy import copy
 import random
 
 class HookeJeevesPatternSearch:
-	def __init__(self, ):
+	def __init__(self):
 		pass
 	
 	def run(self, valueFcn, x0, bounds, P0, T, a, verbose=False):
