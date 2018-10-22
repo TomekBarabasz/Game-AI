@@ -4,23 +4,13 @@
 #define _CRTDBG_MAP_ALLOC  
 #include <stdlib.h>  
 #include <crtdbg.h>  
-#define UNIT_TEST
-#include "../GraWPanaZasady/GraWPanaZasady.cpp"
+#include "..\mcts_player.cpp"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace UnitTests
 {
-	TEST_MODULE_INITIALIZE(ModuleInitialize)
-	{
-		// enable google mock
-		::testing::GTEST_FLAG(throw_on_failure) = true;
-		int argc = 0;
-		char **argv = NULL;
-		::testing::InitGoogleMock(&argc, argv);
-	}
-
-	TEST_CLASS(GameState_UT)
+	TEST_CLASS(MCTSPlayer_UT)
 	{
 		_CrtMemState memState_;
 	public:
@@ -42,20 +32,11 @@ namespace UnitTests
 			}
 		}
 
-		TEST_METHOD(GameStateCreateMemTest)
+		TEST_METHOD(Create)
 		{
-			auto gs = GameState::create(2);
-			gs->Release();
+			auto eval = [](const IGameState*, int value[]) { value[0] = value[1] = 50; };
+			auto p = createMCTSPlayer(0, 1, eval, 0);
+			p->release();
 		}
-		TEST_METHOD(PlayCardMemTest)
-		{
-			auto mv1 = PlayCard::create({ {9,0},{9,1},{9,2} });
-			auto mv2 = PlayCard::create({ {9,0},{9,1} });
-			auto mv3 = PlayCard::create({ {9,0} });
-			mv1->release();
-			mv2->release();
-			mv3->release();
-		}
-
 	};
 }

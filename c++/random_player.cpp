@@ -2,20 +2,23 @@
 #include "GamePlayer.h"
 #include "GameRules.h"
 #include <random>
+#include "GamePlayer.h"
+#include "GamePlayer.h"
 
 struct RandomPlayer : IGamePlayer
 {
 	RandomPlayer(int pn) : playerNum(pn) {}
-	IMove*	selectMove(const IGameState*) override;
+	IMove*	selectMove(const IGameState*gs, PlayerStats_t* ps) override;
+	void	getGameStats(PlayerStats_t& ps) override {}
 	void	release() override { delete this; }
 
 	const int playerNum;
 	std::default_random_engine generator;
 };
 
-IMove* RandomPlayer::selectMove(const IGameState* s)
+IMove* RandomPlayer::selectMove(const IGameState* gs, PlayerStats_t* ps)
 {
-	MoveList moves = s->GetPlayerLegalMoves(playerNum);
+	MoveList moves = gs->GetPlayerLegalMoves(playerNum);
 	if (1 == moves.size()) return moves[0];
 	std::uniform_int_distribution<int> distribution(0, int(moves.size())-1);
 	const int selected = distribution(generator);

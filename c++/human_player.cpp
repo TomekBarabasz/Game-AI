@@ -2,21 +2,24 @@
 #include "GamePlayer.h"
 #include "GameRules.h"
 #include <iostream>
+#include "GamePlayer.h"
+#include "GamePlayer.h"
 
 struct HumanPlayer : IGamePlayer
 {
 	HumanPlayer(int pn) : playerNum(pn) {}
-	IMove*	selectMove(const IGameState*) override;
+	IMove*	selectMove(const IGameState*gs, PlayerStats_t* ps) override;
+	void	getGameStats(PlayerStats_t& ps) override {};
 	void	release() override { delete this; }
 
 	const int playerNum;
 };
 
-IMove* HumanPlayer::selectMove(const IGameState* s)
+IMove* HumanPlayer::selectMove(const IGameState* gs, PlayerStats_t* ps)
 {
-	MoveList moves = s->GetPlayerLegalMoves(playerNum);
+	MoveList moves = gs->GetPlayerLegalMoves(playerNum);
 	std::wcout << L"Game State is :" << std::endl;
-	std::wcout << s->ToString() << std::endl;
+	std::wcout << gs->ToString() << std::endl;
 	std::wcout << L"Valid Moves ares : " << std::endl;
 
 	for (auto i = 0; i < moves.size(); ++i)

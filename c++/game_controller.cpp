@@ -2,7 +2,7 @@
 #include "GameController.h"
 #include "GameRules.h"
 #include <sstream>
-#include <iostream>
+#include <functional>
 #include <chrono>
 
 using std::vector;
@@ -13,24 +13,22 @@ extern void cleanupGraWPanaMemoryMgmt();
 
 struct GameController : IGameController
 {
-	void run(const std::vector<IGamePlayer*>& players, int numGames, int roundLimit, unsigned seeds[], int score[], GameStats_t& stats) override
+	void run(std::function<IGameState*(int)> createGameState, const std::vector<IGamePlayer*>& players, int numGames, int roundLimit, unsigned seeds[], int score[], GameStats_t& stats) override
 	{
 		auto NumPlayers = (int)players.size();
-		//vector<int> single_score(NumPlayers);
 		int single_score[4];
 		int tot_rounds = 0;
 		for (int i = 0; i < NumPlayers; ++i) { score[i] = 0; }
 		using CLK = std::chrono::high_resolution_clock;
-		initGraWPanaMemoryMgmt();
+
 		for (int ng=0;ng<numGames;++ng)
 		{
 			const unsigned seed = seeds != nullptr ? seeds[ng] : unsigned(CLK::now().time_since_epoch().count());
-			tot_rounds += runSingle(players, roundLimit, seed, single_score, stats);
+			tot_rounds += runSingle(createGameState, players, roundLimit, seed, single_score, stats);
 			for (int i=0;i<NumPlayers;++i) {
 				score[i] += single_score[i];
 			}
 		}
-		cleanupGraWPanaMemoryMgmt();
 
 		for (int i = 0; i < NumPlayers; ++i) {
 			score[i] /= numGames;
@@ -40,15 +38,18 @@ struct GameController : IGameController
 	}
 	void release() override { delete this; }
 
-	int runSingle(const std::vector<IGamePlayer*>& players, int roundLimit, unsigned seed, int score[], GameStats_t& stats)
+	int runSingle(std::function<IGameState*(int)> createGameState, const std::vector<IGamePlayer*>& players, int roundLimit, unsigned seed, int score[], GameStats_t& stats)
 	{
-		IGameState *gs = createGraWPanaGameState();
+		IGameState *gs = createGameState(players.size());
 		gs->Initialize((int)players.size(), seed);
 		//std::wcout << L"initial state   :" << std::endl << gs->ToString() << std::endl;
 		int numRounds = 0;
+		//std::wcout << L"state :" << std::endl << gs->ToString() << std::endl;
+		//std::cout << "hash :" << gs->HashS() << std::endl;
 		while(!gs->IsTerminal())
 		{
 			MoveList ml;
+			
 			for (auto *player : players) {
 				ml.push_back(player->selectMove( gs ));
 			}
@@ -58,6 +59,8 @@ struct GameController : IGameController
 			auto gsn = gs->Next(ml);
 			gs->Release();
 			gs = gsn;
+			//std::wcout << L"state :" << std::endl << gs->ToString() << std::endl;
+			//std::cout << "hash :" << gs->HashS() << std::endl;
 			if (++numRounds >= roundLimit) 
 			{
 				break;

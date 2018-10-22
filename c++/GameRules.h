@@ -24,7 +24,8 @@ struct IGameState
 {
 	virtual void		Initialize(int numPlayers, unsigned seed) = 0;
 	virtual wstring		ToString() const = 0;
-	virtual void		Release() = 0;
+	virtual void		AddRef() const = 0;
+	virtual void		Release() const = 0;
 	virtual bool		IsTerminal() const = 0;
 	virtual void		Score(int []) const = 0;
 	virtual IGameState* Next(const MoveList & moves) const = 0;
@@ -33,9 +34,20 @@ struct IGameState
 	virtual IGameState* Apply(const IMove*, int playerNum) const = 0;
 	virtual MoveList	GetPlayerLegalMoves(int player) const = 0;
 	virtual GameStateHash_t	Hash() const = 0;
-	virtual string			HashS() const = 0;
+	virtual string		HashS() const = 0;
 	virtual int			NumPlayers() const = 0;
+	virtual int			CurrentPlayer() const = 0;
 
 protected:
 	virtual ~IGameState(){}
+};
+
+struct IGameStateFactory
+{
+	virtual void initGlobal() = 0;
+	virtual void initThread() = 0;
+	virtual IGameState* create() = 0;
+	virtual void free(const IGameState*) = 0;
+	virtual void cleanupThread() = 0;
+	virtual void cleanupGlobal() = 0;
 };

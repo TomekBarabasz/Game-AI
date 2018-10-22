@@ -4,6 +4,7 @@
 #include <deque>
 #include <vector>
 #include <functional>
+#include "GamePlayer.h"
 
 struct MinMaxABPlayer_2p : IGamePlayer
 {
@@ -27,7 +28,7 @@ struct MinMaxABPlayer_2p : IGamePlayer
 	};
 	MinMaxABPlayer_2p(int pn, int maxDepth, std::function<void(const IGameState*,int[])> eval) : PlayerNum(pn), MaxDepth(maxDepth), Eval(eval) {}
 	void	release() override { delete this; }
-
+	void	getGameStats(PlayerStats_t& ps) override {}
 	Action selectMoveRec(const IGameState* gs, int curPlayer, int depth, int alpha, int beta, bool Maximize)
 	{
 		if (gs->IsTerminal())
@@ -83,9 +84,9 @@ struct MinMaxABPlayer_2p : IGamePlayer
 		return bestAction;
 	}
 
-	IMove* selectMove(const IGameState* s) override
+	IMove* selectMove(const IGameState* gs, PlayerStats_t* ps) override
 	{
-		return selectMoveRec(s, PlayerNum, 0, -1000, 1000, true).mv;
+		return selectMoveRec(gs, PlayerNum, 0, -1000, 1000, true).mv;
 	}
 
 #if 0

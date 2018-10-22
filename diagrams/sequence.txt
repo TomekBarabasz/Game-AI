@@ -1,0 +1,48 @@
+@startuml
+participant GameController
+participant GameRules
+participant GameState
+participant GamePlayerFactory
+
+[->GameController : start (configuration)
+GameController -> GameRules : initialize (number_of_players)
+GameController -> GamePlayerFactory : initialize (number_of_players)
+GameController -> GamePlayerFactory : createPlayer(player_number) 
+create GamePlayer1
+GamePlayerFactory -> GamePlayer1 : create
+GameController -> GamePlayerFactory : createPlayer(player_number)
+create GamePlayer2
+GamePlayerFactory -> GamePlayer2 : create
+GameController -> GameRules : initialize
+
+loop for each game
+GameController -> GameRules : create_initial_state
+GameRules -> GameState : create
+activate GameState
+loop until end condition
+GameController -> GamePlayer1 : selectMove(current_state)
+GamePlayer1 -> GameState : evaluate
+GamePlayer1 --> GameController : player_1_move
+GameController -> GamePlayer2 : selectMove(current_state)
+GamePlayer2 -> GameState : evaluate
+GamePlayer2 --> GameController : player_2_move
+GameController -> GameRules : next_state (current_state, player_1_move, player_2_move)
+GameRules -> GameState : destroy
+deactivate GameState
+
+GameRules -> GameState : create
+activate GameState
+end
+GameController -> GameState : get_score
+GameController -> GameRules : shutdown
+GameRules -> GameState : destroy
+deactivate GameState
+GameController -> GamePlayer1 : get_stats
+GameController -> GamePlayer1 : destroy
+destroy GamePlayer1
+GameController -> GamePlayer2 : get_stats
+GameController -> GamePlayer2 : destroy
+destroy GamePlayer1
+end
+
+@enduml
