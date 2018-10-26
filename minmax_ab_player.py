@@ -50,6 +50,8 @@ class MinMaxAlphaBetaTracer:
 		self.tracer.traceEdge(stateName, nname, mv)
 	def traceNode(self,node):
 		self.tracer.traceNode(node)
+	def trace(self, text):
+		self.tracer.trace(text)
 	def close(self):
 			self.tracer.close()
 

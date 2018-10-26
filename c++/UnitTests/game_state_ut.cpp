@@ -8,6 +8,7 @@
 #include "../GraWPanaZasady/GraWPanaZasady.cpp"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using namespace GraWPanaV1;
 
 namespace UnitTests
 {

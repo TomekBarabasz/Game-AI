@@ -1,6 +1,5 @@
 #include "pch.h"
-#include "GameRules.h"
-
+#include "GameState.h"
 #include <vector>
 #include <functional>
 #include <boost/algorithm/string.hpp>

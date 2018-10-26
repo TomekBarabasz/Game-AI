@@ -76,3 +76,54 @@ struct ObjectPool
 		_trackPolicy.release<FreeObject>();
 	}
 };
+
+template <typename T, int OBJECTS_IN_BLOCK>
+struct ObjectPoolBlocked
+{
+	constexpr static int	ObjectSizeInBytes = sizeof(T);
+	std::vector<uint8_t*>	blocks;
+	std::vector<uint8_t*>	objects;
+
+	ObjectPoolBlocked() 
+	{
+		allocNewBlock();
+	}
+	~ObjectPoolBlocked() 
+	{
+		objects.clear();
+		for (auto *ptr : blocks) {
+			delete[] ptr;
+		}
+	}
+	T* alloc()
+	{
+		if (!objects.empty()) {
+			allocNewBlock();
+		}
+		auto * ptr = objects.back();
+		objects.pop_back();
+		return new(ptr) T();
+	}
+	template <typename...Args>
+	T* alloc(Args...args)
+	{
+		if (!objects.empty()) {
+			allocNewBlock();
+		}
+		auto * ptr = objects.back();
+		objects.pop_back();
+		return new(ptr) T(args);
+	}
+	void free(T*obj) 
+	{
+		objects.push_back(reinterpret_cast<uint8_t*>(obj));
+	}
+	void allocNewBlock() 
+	{
+		auto * block_ptr = new uint8_t[OBJECTS_IN_BLOCK * ObjectSizeInBytes];
+		blocks.push_back(block_ptr);
+		for (int i=0;i<OBJECTS_IN_BLOCK;++i,block_ptr += ObjectSizeInBytes) {
+			objects.push_back(block_ptr);
+		}
+	}
+};

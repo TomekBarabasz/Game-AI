@@ -1,53 +1,38 @@
 #pragma once
 #include <vector>
 #include <string>
-#include <boost/dynamic_bitset.hpp>
-#include <bitset>
 
 using std::wstring;
 using std::string;
 
-struct IGameState;
-struct IMove
+struct IRandomGenerator;
+struct GameState;
+struct Move;
+struct MoveList;
+struct IGameRules
 {
-	virtual wstring toString() const = 0;
-	virtual void release() = 0;
-protected:
-	virtual ~IMove() {}
-};
-using MoveList = std::vector<IMove*>;
-
-//using GameStateHash_t = boost::dynamic_bitset<std::uint64_t>;
-using GameStateHash_t = std::bitset<24*5>;
-
-struct IGameState
-{
-	virtual void		Initialize(int numPlayers, unsigned seed) = 0;
-	virtual wstring		ToString() const = 0;
-	virtual void		AddRef() const = 0;
-	virtual void		Release() const = 0;
-	virtual bool		IsTerminal() const = 0;
-	virtual void		Score(int []) const = 0;
-	virtual IGameState* Next(const MoveList & moves) const = 0;
-	//apply assumes all other players submitten Noop
+	virtual void SetRandomGenerator(IRandomGenerator*) = 0;
+	virtual GameState* CreateRandomInitialState(IRandomGenerator*) = 0;
+	virtual GameState* CreateInitialStateFromHash(const uint32_t*) = 0;
+	virtual void ReleaseGameState(GameState*) = 0;
+	virtual void ReleaseMoveList(const MoveList*) = 0;
+	virtual int	 GetNumMoves(const MoveList*) = 0;
+	virtual const Move*GetMoveFromList(const MoveList*,int idx) = 0;
+	virtual bool IsTerminal(const GameState*) = 0;
+	virtual void Score(const GameState*, int score[]) = 0;
+	virtual const MoveList* GetPlayerLegalMoves(const GameState*, int playerNum) = 0;
+	//apply assumes all other players submitted Noop
 	//and will increment player number
-	virtual IGameState* Apply(const IMove*, int playerNum) const = 0;
-	virtual MoveList	GetPlayerLegalMoves(int player) const = 0;
-	virtual GameStateHash_t	Hash() const = 0;
-	virtual string		HashS() const = 0;
-	virtual int			NumPlayers() const = 0;
-	virtual int			CurrentPlayer() const = 0;
+	virtual GameState* ApplyMove(const GameState*, const Move*, int player) = 0;
+	virtual GameState* Next(const GameState*, const std::vector<Move*>& moves) = 0;
+	virtual const uint32_t* GetStateHash(const GameState*) = 0;
+	virtual size_t GetStateHashSize() = 0;
+	virtual string ToString(const GameState*) = 0;
+	virtual wstring ToWString(const GameState*) = 0;
+	virtual void Release() = 0;
 
 protected:
-	virtual ~IGameState(){}
+	virtual ~IGameRules(){}
 };
 
-struct IGameStateFactory
-{
-	virtual void initGlobal() = 0;
-	virtual void initThread() = 0;
-	virtual IGameState* create() = 0;
-	virtual void free(const IGameState*) = 0;
-	virtual void cleanupThread() = 0;
-	virtual void cleanupGlobal() = 0;
-};
+IGameRules* createGraWPanaGameRules(int NumPlayers);

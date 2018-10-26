@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "GamePlayer.h"
-#include "GameRules.h"
+#include "GameState.h"
 #include <vector>
 #include <functional>
 #include <random>
@@ -9,7 +9,20 @@
 #include <math.h>
 #include <chrono>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 
+#ifdef UNIT_TEST
+#define _CRTDBG_MAP_ALLOC  
+#include "CppUnitTestLogger.h"
+using Microsoft::VisualStudio::CppUnitTestFramework::Logger;
+#define TRACE(fmt, ...){\
+	static wchar_t tmp[256];\
+	swprintf_s(tmp, fmt, ##__VA_ARGS__);\
+	Logger::WriteMessage(tmp);}
+#else
+#define TRACE(fmt, ...)
+#endif
 using std::vector;
 using CLK = std::chrono::high_resolution_clock;
 
@@ -37,8 +50,10 @@ struct MCTS_GamePlayer : IGamePlayer
 		}
 	};
 	using Path_t = vector< std::pair<StateNode*, MoveNode*> >;
-	MCTS_GamePlayer(int playerNum, std::function<void(const IGameState*, int*)> eval, unsigned seed) : 
-		PlayerNum(playerNum), Eval(eval)
+	MCTS_GamePlayer(int playerNum, std::function<void(const IGameState*, int*)> eval, int nodesToAppendDuringExp=-1, unsigned seed=0) :
+		PlayerNum(playerNum), 
+		NodesToAppendDuringExpansion(nodesToAppendDuringExp),
+		Eval(eval)
 	{
 		m_generator.seed(seed);
 	}
@@ -48,10 +63,12 @@ struct MCTS_GamePlayer : IGamePlayer
 		freeTree(m_root);
 		m_nodePool.release();
 	}
+
 	void release() override { delete this; }
 	void getGameStats(PlayerStats_t& ps) override {}
 
 	const int PlayerNum;
+	const int NodesToAppendDuringExpansion = 1;
 	std::default_random_engine	m_generator;
 	ObjectPool<StateNode, FreeObjectByDelete, TrackAliveObjects> m_nodePool;
 	StateNode *m_root=nullptr;
@@ -62,7 +79,7 @@ struct MCTS_GamePlayer : IGamePlayer
 		if (gs->CurrentPlayer() != PlayerNum) {
 			return gs->GetPlayerLegalMoves(PlayerNum)[0];
 		}
-		
+		gs->AddRef(); //only once, will be stored in game search tree
 		const auto t0 = CLK::now();
 		int numSimulationsDone = 0;
 		do {
@@ -84,6 +101,18 @@ struct MCTS_GamePlayer : IGamePlayer
 		expansion(path, currentTreeSize);
 	}
 
+	IMove* runNSimulations(const IGameState* gs, int totNumSimulations)
+	{
+		if (gs->CurrentPlayer() != PlayerNum) {
+			return gs->GetPlayerLegalMoves(PlayerNum)[0];
+		}
+
+		while(totNumSimulations-- > 0) {
+			runSingleSimulation(gs);
+		}
+		return selectMove(m_root, 0)->mv;
+	}
+
 	StateNode* findRootNode(const IGameState * s, StateNode *node)
 	{
 		if (nullptr == node) {
@@ -92,70 +121,67 @@ struct MCTS_GamePlayer : IGamePlayer
 		}
 		auto rn = find(node, s->CurrentPlayer(), s->Hash());
 		if (rn==nullptr) {
-			std::cout << "state not found, create new root" << std::endl;
+			//std::cout << "state not found, create new root" << std::endl;
 			return makeTreeNode(s);
 		}else {
-			std::cout << "state found" << std::endl;
+			//std::cout << "state found" << std::endl;
 		}
 		return rn;
 	}
 
 	Path_t selection(StateNode* node)
 	{
-		const double C = 0.2;
+		const double C = 1.0;
 		Path_t path;
-		std::multimap<double, MoveNode*> moves;
-		do
-		{
+		do {
 			MoveNode *mn = selectMove(node, C);
 			path.push_back({ node, mn });
-			++node->numVisited;
-			++mn->numVisited;
-			node = mn->next;
+			node = mn != nullptr ? mn->next : nullptr;
 		} while (node != nullptr);
 		return path;
 	}
 
 	void playOut(Path_t& path)
 	{
-		const int MaxPlayoutDepth = 50;
+		const int MaxPlayoutDepth = 20;
 		int playoutDepth = 0;
 		StateNode *node = path.back().first;
 		MoveNode *move = path.back().second;
-		int score[4];
+		if (!move) return;
+		TRACE(L"starting playout @ state %s", node->state->ToString().c_str());
 		for (;;)
 		{
 			node = makeTreeNode(node->state->Apply(move->mv, node->currentPlayer));
 			move->next = node;
-			if (!node->state->IsTerminal())
+			if (!node->state->IsTerminal() && ++playoutDepth < MaxPlayoutDepth)
 			{
-				if (++playoutDepth < MaxPlayoutDepth) {
-					const auto idx = selectOneOf(0, node->moves.size() - 1);
-					move = &node->moves[idx];
-					path.push_back({ node, move });
-				}
-				else
-				{
-					Eval(node->state, score);
-					freeStateNode(node);
-					m_nodePool.free(node);
-					break;
-				}
+				const auto idx = selectOneOf(0, node->moves.size() - 1);
+				move = &node->moves[idx];
+				path.push_back({ node, move });
 			}
 			else {
-				node->state->Score(score);
-				freeStateNode(node);
+				path.push_back({ node, nullptr });
 				break;
 			}
 		}
-		for (int i = 0; i < 4; ++i) { move->value[i] = (float)score[i]; }
 	}
 
 	void backpropagation(Path_t& path)
 	{
-		const auto value = path.rbegin()->second->value;
+		int score[4];
+		float value[4];
+		auto & finalNode = *path.rbegin()->first;
+		if (finalNode.state->IsTerminal()) {
+			finalNode.state->Score(score);
+		}else {
+			Eval(finalNode.state, score);
+		}
+		for (int i = 0; i < 4; ++i) { value[i] = score[i] / 100.0f; }
+		++finalNode.numVisited;
 		for (auto it = path.rbegin() + 1; it != path.rend(); ++it)
 		{
+			++it->first->numVisited;
+			++it->second->numVisited;
 			for (int i = 0; i < 4; ++i) {
 				it->second->value[i] += value[i];
 			}
@@ -164,12 +190,16 @@ struct MCTS_GamePlayer : IGamePlayer
 
 	void expansion(Path_t& path, size_t lastStoredNode)
 	{
-		const int NodesToAppend = 1;
-		auto & last = path[lastStoredNode];
-		const auto LastIdx = __min(lastStoredNode + NodesToAppend, path.size() - 1);
-		path[LastIdx].second->next = nullptr;
-		for (auto i=LastIdx;i<path.size();++i) {
-			freeStateNode(path[i].first);
+		if (NodesToAppendDuringExpansion > 0) 
+		{
+			auto & last = path[lastStoredNode];
+			const auto LastIdx = __min(lastStoredNode + NodesToAppendDuringExpansion, path.size() - 1);
+			path[LastIdx].second->next = nullptr;
+			for (auto i = LastIdx + 1; i < path.size(); ++i) {
+				freeStateNode(path[i].first);
+			}
+		}else{
+			//all nodes will be added
 		}
 		path.clear();
 	}
@@ -193,18 +223,32 @@ struct MCTS_GamePlayer : IGamePlayer
 		std::uniform_int_distribution<size_t> distribution(first, last);
 		return distribution(m_generator);
 	}
-	
+
+	void traceSelectMove(const wstring& state, const std::multimap<double, MoveNode*>& moves, const wstring& selected)
+	{
+		std::wstringstream ss;
+		ss << state << L" moves : ";
+		for (auto & it : moves)
+		{
+			ss << it.second->mv->toString() << L" : " << it.first << L" | ";
+		}
+		ss << L"selected " << selected << std::endl;
+		TRACE(ss.str().c_str());
+	}
+
 	MoveNode* selectMove(StateNode* node, double C)
 	{
-		if (node->moves.size()==1) {
-			return &node->moves[0];
-		}
+		const auto num_moves = node->moves.size();
+		if (1 == num_moves) { return &node->moves[0]; }
+		if (0 == num_moves) { return nullptr; }
 		std::multimap<double, MoveNode*> moves;
 		const auto cp = node->currentPlayer;
 
 		for (auto & mv : node->moves)
 		{
-			double value = mv.numVisited != 0 ? mv.value[cp] / mv.numVisited + C * sqrt(log(node->numVisited) / mv.numVisited) : 0.0;
+			//double value = mv.numVisited != 0 ? mv.value[cp] / mv.numVisited + C * sqrt(log(node->numVisited) / mv.numVisited) : 0.0;
+			const double oo_mvVisited = 1.0  /(mv.numVisited + 1);
+			const double value = mv.value[cp] * oo_mvVisited + C * sqrt(log(node->numVisited + 1) * oo_mvVisited);
 			moves.insert({ value, &mv });
 		}
 		auto it = moves.rbegin();
@@ -216,14 +260,16 @@ struct MCTS_GamePlayer : IGamePlayer
 		auto idx = selectOneOf(0, cnt - 1);
 		//return (it + idx)->second;
 		while (idx-- > 0) ++it;
+		traceSelectMove(node->state->ToString(), moves, it->second->mv->toString());
 		return it->second;
 	}
 
 	StateNode* makeTreeNode(const IGameState* gs)
 	{
 		auto node = m_nodePool.alloc();
+		TRACE(L"++ node %p\n", node);
 		node->state = gs;
-		gs->AddRef();
+		//gs->AddRef();
 		node->numVisited = 0;
 		node->moves.clear();
 		node->currentPlayer = gs->CurrentPlayer();
@@ -245,8 +291,37 @@ struct MCTS_GamePlayer : IGamePlayer
 
 	void freeStateNode(StateNode* node)
 	{
+		TRACE(L"-- node %p\n", node);
 		node->free();
 		m_nodePool.free(node);
+	}
+
+	void dumpTree(const string & filename)
+	{
+		//dot.exe -Tsvg mcts_tree_dump.gv -o mcts_tree_dump.svg -Goverlap=prism
+		std::wofstream out(filename);
+		out << L"digraph g {" << std::endl;
+		dumpTreeNode(out, m_root);
+		out << L"}" << std::endl;
+	}
+	void dumpTreeNode(std::wofstream& out, StateNode* sn)
+	{
+		const wstring name = sn->state->ToString();
+		out << L"\"" << name << L"\" [label = \"name=" << name << L"\\nnum_visited = " << sn->numVisited << L"\\ncurrent_player = " << sn->state->CurrentPlayer();
+		if (sn->state->IsTerminal()) {
+			int score[4];
+			sn->state->Score(score);
+			out << L"\\nscore = " << score[0] << L" , " << score[1];
+		}
+		out << "\"]" << std::endl;
+		for (auto & mv : sn->moves)
+		{
+			if (!mv.next) continue;
+			const wstring tname = mv.next->state->ToString();
+			out << L"\"" << name << L"\" -> \"" << tname << L"\" [label = \"name=" << mv.mv->toString() << L"\\nnum_visited = " << mv.numVisited;
+			out << L"\\nvalue = " << mv.value[0] << L" , " << mv.value[1] << "\"]" << std::endl;
+			dumpTreeNode(out, mv.next);
+		}
 	}
 };
 
@@ -255,5 +330,5 @@ IGamePlayer* createMCTSPlayer(int playerNum, int numPlayers, std::function<void(
 	if (0==seed) {
 		seed = unsigned(CLK::now().time_since_epoch().count());
 	}
-	return new MCTS_GamePlayer(playerNum, eval, seed);
+	return new MCTS_GamePlayer(playerNum, eval, 1, seed);
 }

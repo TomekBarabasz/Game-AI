@@ -1,9 +1,7 @@
 #include "pch.h"
 #include "GamePlayer.h"
-#include "GameRules.h"
+#include "GameState.h"
 #include <iostream>
-#include "GamePlayer.h"
-#include "GamePlayer.h"
 
 struct HumanPlayer : IGamePlayer
 {

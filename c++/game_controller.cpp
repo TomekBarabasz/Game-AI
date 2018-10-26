@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "GameController.h"
-#include "GameRules.h"
+#include "GameState.h"
 #include <sstream>
 #include <functional>
 #include <chrono>
@@ -40,8 +40,8 @@ struct GameController : IGameController
 
 	int runSingle(std::function<IGameState*(int)> createGameState, const std::vector<IGamePlayer*>& players, int roundLimit, unsigned seed, int score[], GameStats_t& stats)
 	{
-		IGameState *gs = createGameState(players.size());
-		gs->Initialize((int)players.size(), seed);
+		IGameState *gs = createGameState((int)players.size());
+		gs->Initialize(seed);
 		//std::wcout << L"initial state   :" << std::endl << gs->ToString() << std::endl;
 		int numRounds = 0;
 		//std::wcout << L"state :" << std::endl << gs->ToString() << std::endl;

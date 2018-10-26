@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "GamePlayer.h"
-#include "GameRules.h"
-#include "GamePlayer.h"
-#include "GamePlayer.h"
+#include "GameState.h"
 
 struct LowCardPlayer : IGamePlayer
 {

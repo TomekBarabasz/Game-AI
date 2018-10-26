@@ -1,10 +1,8 @@
 #include "pch.h"
 #include "GamePlayer.h"
-#include "GameRules.h"
-#include <deque>
+#include "GameState.h"
 #include <vector>
 #include <functional>
-#include "GamePlayer.h"
 
 struct MinMaxABPlayer_2p : IGamePlayer
 {

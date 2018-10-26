@@ -1,0 +1,49 @@
+number_of_players=2
+
+state label=S0 player=0
+S0 -> S0 label=noop player=1
+S0 -> S1 label=mv0.1 player=0
+S0 -> S2 label=mv0.2 player=0
+
+state label=S1 player=1
+S1 -> S1   label=noop player=0
+S1 -> S1.1 label=mv1.1 player=1
+S1 -> S1.2 label=mv1.2 player=1
+
+state label=S2 player=1
+S2 -> S2   label=noop player=0
+S2 -> S2.1 label=mv2.1 player=1
+S2 -> S2.2 label=mv2.2 player=1
+
+state label=S1.1 player=0
+S1.1 -> S1.1     label=noop player=1
+S1.1 -> END1.1.1 label=mv1.1.1 player=0
+S1.1 -> END1.1.2 label=mv1.1.2 player=0
+
+state label=S1.2 player=0
+S1.2 -> S1.2     label=noop player=1
+S1.2 -> END1.2.1 label=mv1.2.1 player=0
+S1.2 -> END1.2.2 label=mv1.2.2 player=0
+
+state label=S2.1 player=0
+S2.1 -> S2.1     label=noop player=1
+S2.1 -> END2.1.1 label=mv2.1.1 player=0
+S2.1 -> END2.1.2 label=mv2.1.2 player=0
+
+state label=S2.2 player=0
+S2.2 -> S2.2     label=noop player=1
+S2.2 -> END2.2.1 label=mv2.2.1 player=0
+S2.2 -> END2.2.2 label=mv2.2.2 player=0
+
+state label=END1.1.1 player=1 score=100,0
+state label=END1.1.2 player=1 score=50,50
+
+state label=END1.2.1 player=1 score=50,50
+state label=END1.2.2 player=1 score=50,50
+
+state label=END2.1.1 player=1 score=50,50
+state label=END2.1.2 player=1 score=50,50
+
+state label=END2.2.1 player=1 score=50,50
+state label=END2.2.2 player=1 score=0,100
+
