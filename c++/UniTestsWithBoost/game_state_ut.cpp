@@ -7,7 +7,7 @@
 #define _CRTDBG_MAP_ALLOC  
 #define UNIT_TEST
 
-#include "GraWPanaZasady/GraWPanaZasady.cpp"
+#include "../GraWPanaZasady/GraWPanaZasady.cpp"
 //#include "GraWPanaZasadyV2/GraWPanaZasadyV2.cpp"
 
 namespace but = boost::unit_test;

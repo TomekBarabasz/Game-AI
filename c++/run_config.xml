@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <game num_games="100" round_limit="100" num_threads="8" provider="GraWPanaZasadyV2" verbose="false" />
+  <players>
+    <_player provider="SimpleStrategyPlayer" type="random" />
+    <_player provider="minmaxabplayer" search_depth="5" />
+    <player provider="mctsplayer" explore_exploit_ratio="1.0" playout_depth="10" expand_size="1" _move_sim_limit="15" move_time_limit="0.1" />
+    <player provider="SimpleStrategyPlayer" type="lowcard" />
+  </players>
+</config>
