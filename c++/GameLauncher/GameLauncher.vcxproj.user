@@ -5,4 +5,9 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>C:\MyData\Projects\gra_w_pana\c++\x64\Debug</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LocalDebuggerCommandArguments>--xml "C:\MyData\Projects\gra_w_pana\c++\run_config.xml"</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerWorkingDirectory>C:\MyData\Projects\gra_w_pana\c++\x64\Release</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
 </Project>

@@ -26,5 +26,8 @@
     <ClCompile Include="game_rules_v2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="object_pool_multisize_ut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

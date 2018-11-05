@@ -32,6 +32,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{AE63CC42
 		common\utils\mem_check.h = common\utils\mem_check.h
 		common\utils\memory_mgmt.h = common\utils\memory_mgmt.h
 		common\utils\object_pool.h = common\utils\object_pool.h
+		common\utils\object_pool_multisize.h = common\utils\object_pool_multisize.h
 		common\utils\random_generator.h = common\utils\random_generator.h
 		common\utils\test_game_rules.cpp = common\utils\test_game_rules.cpp
 		common\utils\test_game_rules.h = common\utils\test_game_rules.h
