@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
-  <game num_games="100" round_limit="100" num_threads="4" provider="GraWPanaZasadyV2" verbose="false" />
+  <game num_games="100" round_limit="100" num_threads="4" provider="GraWPanaZasadyV2" verbose="false" save="results.xml" />
   <players>
     <_player provider="SimpleStrategyPlayer" type="random" />
     <_player provider="minmaxabplayer" search_depth="5" />
-    <player provider="mctsplayer" explore_exploit_ratio="1.0" playout_depth="10" expand_size="1" move_sim_limit="20" _move_time_limit="0.01" />
+    <player provider="mctsplayer" explore_exploit_ratio="1.0" playout_depth="30" expand_size="1" move_sim_limit="30" _move_time_limit="0.1" />
     <player provider="SimpleStrategyPlayer" type="lowcard" />
   </players>
 </config>

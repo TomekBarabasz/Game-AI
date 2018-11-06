@@ -24,6 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{4F363DE5-056
 		common\api\GameController.h = common\api\GameController.h
 		common\api\GamePlayer.h = common\api\GamePlayer.h
 		common\api\GameRules.h = common\api\GameRules.h
+		common\api\Metrics.h = common\api\Metrics.h
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{AE63CC42-BF2D-4C7A-AFAB-CB22A0AAF190}"

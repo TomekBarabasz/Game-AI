@@ -45,9 +45,6 @@ struct OccupancyMask
 				bitblock &= bitblock - 1;
 			}
 		}
-#ifndef UNIT_TEST
-		_ASSERT(false);
-#endif
 		return -1;
 	}
 	void freeChunkBlock(unsigned long chunk_idx, size_t size)
