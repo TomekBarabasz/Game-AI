@@ -40,7 +40,7 @@ struct Histogram
 		//return ss.str().erase(ss.str().size()-1, 1);
 		//ss.seekp(-1, ss.cur); ss << " ";
 		std::string result(ss.str());
-		result.pop_back();
+		if (!result.empty()) result.pop_back();
 		return result;
 #endif
 	}
