@@ -6,17 +6,19 @@
 template <typename T>
 struct Histogram
 {
-	float Precision = 0.1f;
+	T Precision;
 	std::unordered_map<T, unsigned> values;
 	using ValueType_t = typename std::unordered_map<T, unsigned>::value_type;
 
+	Histogram() : Precision( T(1) ) {}
+	Histogram(T precision) : Precision(precision){}
 	T round(T val) const { return val; }
 	void insert(T val)
 	{
 		const T rval = round(val);
-		auto it = values.find(val);
+		auto it = values.find(rval);
 		if (it != values.end()) it->second += 1;
-		else values[val] = 1;
+		else values[rval] = 1;
 	}
 	std::string to_string() const
 	{
@@ -59,6 +61,11 @@ template <>
 float Histogram<float>::round(float val) const
 {
 	return float(int(val * Precision) / Precision);
+}
+template <>
+long Histogram<long>::round(long val) const
+{
+	return val / Precision;
 }
 template <typename T>
 struct Average
