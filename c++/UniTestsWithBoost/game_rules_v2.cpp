@@ -1,4 +1,5 @@
 #include "pch.h"
+#define BOOST_TEST_MODULE test_module
 #include <boost/test/unit_test.hpp>
 #include <boost/test/data/test_case.hpp>	//required for BOOST_DATA_TEST_CASE
 #include <boost/test/data/monomorphic.hpp>	//required for boost::unit_test::data
@@ -7,7 +8,7 @@
 #define _CRTDBG_MAP_ALLOC  
 #define UNIT_TEST
 
-#include "GraWPanaZasadyV2/GraWPanaZasadyV2.cpp"
+#include "../GraWPanaZasadyV2/GraWPanaZasadyV2.cpp"
 
 namespace but = boost::unit_test;
 namespace butd = boost::unit_test::data;
@@ -18,53 +19,53 @@ BOOST_AUTO_TEST_CASE(makeStackMasks)
 {
 	uint32_t stack;
 	stack = 0b0001;
-	auto masks = GraWPanaGameRules::makeStackMasks(stack);
+	auto m = GraWPanaGameRules::makeStackMasks(stack);
 	//0b111111111111111111111111
 	//0b000000000000000000000000
-	BOOST_TEST(0b111111111111111111111110 == masks.get<0>());	//allowed cards mask
-	BOOST_TEST(0b000000000000000000001111 == masks.get<1>());	//first allowed quad mask
-	BOOST_TEST(0b000000000000000000000000 == masks.get<2>());	//take cards mask
+	BOOST_TEST(0b111111111111111111111110 == m.allowed_cards);	//allowed cards mask
+	BOOST_TEST(0b000000000000000000001111 == m.first_allowed_quad);	//first allowed quad mask
+	BOOST_TEST(0b000000000000000000000000 == m.take_cards_mask);	//take cards mask
 
 	stack = 0b1001;
-	masks = GraWPanaGameRules::makeStackMasks(stack);
-	BOOST_TEST(0b111111111111111111110110 == masks.get<0>());	//allowed cards mask
-	BOOST_TEST(0b000000000000000000001111 == masks.get<1>());	//first allowed quad mask
-	BOOST_TEST(0b000000000000000000001000 == masks.get<2>());	//take cards mask
+	m = GraWPanaGameRules::makeStackMasks(stack);
+	BOOST_TEST(0b111111111111111111110110 == m.allowed_cards);	//allowed cards mask
+	BOOST_TEST(0b000000000000000000001111 == m.first_allowed_quad);	//first allowed quad mask
+	BOOST_TEST(0b000000000000000000001000 == m.take_cards_mask);	//take cards mask
 
 	stack = 0b00010001;
-	masks = GraWPanaGameRules::makeStackMasks(stack);
-	BOOST_TEST(0b111111111111111111100000 == masks.get<0>());	//allowed cards mask
-	BOOST_TEST(0b000000000000000011110000 == masks.get<1>());	//first allowed quad mask
-	BOOST_TEST(0b000000000000000000010000 == masks.get<2>());	//take cards mask
+	m = GraWPanaGameRules::makeStackMasks(stack);
+	BOOST_TEST(0b111111111111111111100000 == m.allowed_cards);	//allowed cards mask
+	BOOST_TEST(0b000000000000000011110000 == m.first_allowed_quad);	//first allowed quad mask
+	BOOST_TEST(0b000000000000000000010000 == m.take_cards_mask);	//take cards mask
 
 	stack = 0b000100000001;
-	masks = GraWPanaGameRules::makeStackMasks(stack);
-	BOOST_TEST(0b111111111111111000000000 == masks.get<0>());	//allowed cards mask
-	BOOST_TEST(0b000000000000111100000000 == masks.get<1>());	//first allowed quad mask
-	BOOST_TEST(0b000000000000000100000000 == masks.get<2>());	//take cards mask
+	m = GraWPanaGameRules::makeStackMasks(stack);
+	BOOST_TEST(0b111111111111111000000000 == m.allowed_cards);	//allowed cards mask
+	BOOST_TEST(0b000000000000111100000000 == m.first_allowed_quad);	//first allowed quad mask
+	BOOST_TEST(0b000000000000000100000000 == m.take_cards_mask);	//take cards mask
 
 	stack = 0b100000000001;
-	masks = GraWPanaGameRules::makeStackMasks(stack);
-	BOOST_TEST(0b111111111111011100000000 == masks.get<0>());	//allowed cards mask
-	BOOST_TEST(0b000000000000111100000000 == masks.get<1>());	//first allowed quad mask
-	BOOST_TEST(0b000000000000100000000000 == masks.get<2>());	//take cards mask
+	m = GraWPanaGameRules::makeStackMasks(stack);
+	BOOST_TEST(0b111111111111011100000000 == m.allowed_cards);	//allowed cards mask
+	BOOST_TEST(0b000000000000111100000000 == m.first_allowed_quad);	//first allowed quad mask
+	BOOST_TEST(0b000000000000100000000000 == m.take_cards_mask);	//take cards mask
 
 	stack = 0b000100010001;
-	masks = GraWPanaGameRules::makeStackMasks(stack);
-	BOOST_TEST(0b111111111111111000000000 == masks.get<0>());	//allowed cards mask
-	BOOST_TEST(0b000000000000111100000000 == masks.get<1>());	//first allowed quad mask
-	BOOST_TEST(0b000000000000000100010000 == masks.get<2>());	//take cards mask
+	m = GraWPanaGameRules::makeStackMasks(stack);
+	BOOST_TEST(0b111111111111111000000000 == m.allowed_cards);	//allowed cards mask
+	BOOST_TEST(0b000000000000111100000000 == m.first_allowed_quad);	//first allowed quad mask
+	BOOST_TEST(0b000000000000000100010000 == m.take_cards_mask);	//take cards mask
 
 	stack = 0b010100010001;
-	masks = GraWPanaGameRules::makeStackMasks(stack);
-	BOOST_TEST(0b111111111111101000000000 == masks.get<0>());	//allowed cards mask
-	BOOST_TEST(0b000000000000111100000000 == masks.get<1>());	//first allowed quad mask
-	BOOST_TEST(0b000000000000010100010000 == masks.get<2>());	//take cards mask
+	m = GraWPanaGameRules::makeStackMasks(stack);
+	BOOST_TEST(0b111111111111101000000000 == m.allowed_cards);	//allowed cards mask
+	BOOST_TEST(0b000000000000111100000000 == m.first_allowed_quad);	//first allowed quad mask
+	BOOST_TEST(0b000000000000010100010000 == m.take_cards_mask);	//take cards mask
 }
 
 struct CreateGameRules
 {
-	GraWPanaV2::GraWPanaGameRules gr;
+	GraWPanaGameRules gr;
 	CreateGameRules() : gr(2) {}
 };
 
@@ -75,7 +76,8 @@ BOOST_AUTO_TEST_CASE(noop)
 	s.current_player = 1;
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 1);
-	BOOST_TEST(gr.GetMoveFromList(ml,0)->operation == Move::noop);
+	const Move &mv = *gr.GetMoveFromList(ml, 0);
+	BOOST_TEST(mv.operation == Move::noop);
 	gr.ReleaseMoveList(ml);
 }
 BOOST_AUTO_TEST_CASE(play_3x9)
