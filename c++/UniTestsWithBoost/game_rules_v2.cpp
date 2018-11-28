@@ -183,6 +183,24 @@ BOOST_AUTO_TEST_CASE(play_cards_or_take_cards)
 	BOOST_TEST(mv2.cards == 0b000101010000);
 	gr.ReleaseMoveList(ml);
 }
+BOOST_AUTO_TEST_CASE(is_terminal_1)
+{
+	GameState s;
+	s.current_player = 0;
+	s.stack = 0b000101010001;
+	s.hand[0] = 0b001000000010;
+	s.hand[1] = 0;
+	BOOST_TEST(true == gr.IsTerminal(&s));
+}
+BOOST_AUTO_TEST_CASE(is_terminal_2)
+{
+	GameState s;
+	s.current_player = 1;
+	s.stack = 0b000101010001;
+	s.hand[1] = 0b001000000010;
+	s.hand[0] = 0;
+	BOOST_TEST(true == gr.IsTerminal(&s));
+}
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
 
