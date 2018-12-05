@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #define BOOST_TEST_MODULE test_module
 #include <boost/test/unit_test.hpp>
 #include <boost/test/data/test_case.hpp>	//required for BOOST_DATA_TEST_CASE
@@ -76,6 +76,7 @@ BOOST_AUTO_TEST_CASE(noop)
 {
 	GameState s;
 	s.current_player = 1;
+	s.is_terminal = gr.checkIfTerminal(&s);
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 1);
 	const Move &mv = *gr.GetMoveFromList(ml, 0);
@@ -85,9 +86,12 @@ BOOST_AUTO_TEST_CASE(noop)
 BOOST_AUTO_TEST_CASE(play_3x9)
 {
 	GameState s;
+	s.is_terminal = false;
 	s.current_player = 0;
 	s.stack = 0b0001;
 	s.hand[0] = 0b1110;
+	s.is_terminal = gr.checkIfTerminal(&s);
+
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 2);
 	const Move &mv1 = *gr.GetMoveFromList(ml, 0);
@@ -104,6 +108,8 @@ BOOST_AUTO_TEST_CASE(play_1_card_lower)
 	s.current_player = 0;
 	s.stack = 0b0001;
 	s.hand[0] = 0b01010000;
+	s.is_terminal = gr.checkIfTerminal(&s);
+
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 1);
 	const Move &mv = *gr.GetMoveFromList(ml, 0);
@@ -117,6 +123,8 @@ BOOST_AUTO_TEST_CASE(play_quad)
 	s.current_player = 0;
 	s.stack = 0b0001;
 	s.hand[0] = 0b11110000;
+	s.is_terminal = gr.checkIfTerminal(&s);
+
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 2);
 	const Move &mv1 = *gr.GetMoveFromList(ml, 0);
@@ -134,6 +142,8 @@ BOOST_AUTO_TEST_CASE(take_1_card)
 	s.current_player = 0;
 	s.stack = 0b00010001;
 	s.hand[0] = 0b1000;
+	s.is_terminal = gr.checkIfTerminal(&s);
+
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 1);
 	const Move &mv = *gr.GetMoveFromList(ml, 0);
@@ -147,6 +157,8 @@ BOOST_AUTO_TEST_CASE(take_2_cards)
 	s.current_player = 0;
 	s.stack = 0b000100100001;
 	s.hand[0] = 0b0010;
+	s.is_terminal = gr.checkIfTerminal(&s);
+
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 1);
 	const Move &mv = *gr.GetMoveFromList(ml, 0);
@@ -160,6 +172,8 @@ BOOST_AUTO_TEST_CASE(take_3_cards)
 	s.current_player = 0;
 	s.stack = 0b010101010001;
 	s.hand[0] = 0b0010;
+	s.is_terminal = gr.checkIfTerminal(&s);
+
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 1);
 	const Move &mv = *gr.GetMoveFromList(ml, 0);
@@ -173,6 +187,8 @@ BOOST_AUTO_TEST_CASE(play_cards_or_take_cards)
 	s.current_player = 0;
 	s.stack = 0b000101010001;
 	s.hand[0] = 0b001000000010;
+	s.is_terminal = gr.checkIfTerminal(&s);
+
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 2);
 	const Move &mv1 = *gr.GetMoveFromList(ml, 0);
@@ -190,6 +206,7 @@ BOOST_AUTO_TEST_CASE(is_terminal_1)
 	s.stack = 0b000101010001;
 	s.hand[0] = 0b001000000010;
 	s.hand[1] = 0;
+	s.is_terminal = gr.checkIfTerminal(&s);
 	BOOST_TEST(true == gr.IsTerminal(&s));
 }
 BOOST_AUTO_TEST_CASE(is_terminal_2)
@@ -199,7 +216,30 @@ BOOST_AUTO_TEST_CASE(is_terminal_2)
 	s.stack = 0b000101010001;
 	s.hand[1] = 0b001000000010;
 	s.hand[0] = 0;
+	s.is_terminal = gr.checkIfTerminal(&s);
 	BOOST_TEST(true == gr.IsTerminal(&s));
+}
+BOOST_AUTO_TEST_SUITE_END();
+BOOST_FIXTURE_TEST_SUITE(CreateStateFromString, CreateGameRules);
+BOOST_AUTO_TEST_CASE(from_wstring_1)
+{
+	//SUITS ORDER ♦ ♣ ♠ ♥;
+	GameState *s = gr.CreateStateFromString(L"S=9♥10♥10♠W♥W♠A♦|P0=9♠10♣|P1=9♣9♦10♦W♣W♦D♥D♠D♣D♦K♥K♠K♣K♦A♥A♠A♣|CP=1");
+	BOOST_TEST(1 == gr.GetCurrentPlayer(s));
+	BOOST_TEST(0b100000000000001100110001 == uint32_t(s->stack));
+	BOOST_TEST(0b01000010 == s->hand[0]);
+	BOOST_TEST(0b011111111111110010001100 == s->hand[1]);
+	gr.ReleaseGameState(s);
+}
+BOOST_AUTO_TEST_CASE(from_wstring_2)
+{
+	//SUITS ORDER ♦ ♣ ♠ ♥;
+	GameState *s = gr.CreateStateFromString(L"S=|P0=|P1=9♦10♦W♦D♦K♦A♦|CP=0");
+	BOOST_TEST(0 == gr.GetCurrentPlayer(s));
+	BOOST_TEST(0 == uint32_t(s->stack));
+	BOOST_TEST(0 == s->hand[0]);
+	BOOST_TEST(0b100010001000100010001000 == s->hand[1]);
+	gr.ReleaseGameState(s);
 }
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();

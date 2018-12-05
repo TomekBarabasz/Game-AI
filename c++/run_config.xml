@@ -4,7 +4,7 @@
   <players>
     <_player provider="SimpleStrategyPlayer" type="random" />
     <player provider="minmaxabplayer" search_depth="9" />
-    <player provider="mctsplayer" explore_exploit_ratio="2.0" playout_depth="20" expand_size="3" _move_sim_limit="30" move_time_limit="2" _trace_move_filename="mcts_move_tree" _game_tree_filename="mcts_game_tree" trace="mcts.log" out_dir="c:\MyData\Projects\gra_w_pana\logs" />
+    <player provider="mctsplayer" explore_exploit_ratio="2.0" playout_depth="20" expand_size="3" expand_from_last_permanent_node="1" _move_sim_limit="30" move_time_limit="2" _trace_move_filename="mcts_move_tree" _game_tree_filename="mcts_game_tree" trace="console" out_dir="c:\MyData\Projects\gra_w_pana\dbg_logs" />
     <_player provider="SimpleStrategyPlayer" type="lowcard" />
   </players>
 </config>

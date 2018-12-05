@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include "GameRules.h"
+#include <algorithm>
 
 using std::map;
 using std::vector;
@@ -50,6 +51,13 @@ struct TestGameRules: IGameRules
 	GameState* CreateInitialStateFromHash(const uint32_t*) override
 	{
 		throw "not implemented";
+	}
+	GameState*	CreateStateFromString(const wstring& sstr) override
+	{
+		auto it = std::find_if(m_tree.begin(), m_tree.end(), [&](const GameState& gs){
+			return gs.name == sstr;
+		});
+		return &*it;
 	}
 	GameState* CopyGameState(const GameState*) override
 	{

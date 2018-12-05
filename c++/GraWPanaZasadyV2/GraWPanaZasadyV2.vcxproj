@@ -162,7 +162,7 @@
   <ItemGroup>
     <ClCompile Include="..\common\utils\dllmain.cpp" />
     <ClCompile Include="GraWPanaZasadyV2.cpp" />
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="pch_gwp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

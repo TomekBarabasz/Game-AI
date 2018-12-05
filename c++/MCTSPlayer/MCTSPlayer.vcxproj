@@ -156,14 +156,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="MCTSPlayer.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\common\utils\Trace.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="MCTSPlayer_diagnostics.cpp" />
     <ClCompile Include="MCTSPlayer.cpp" />
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="MCTSPlayer_factory.cpp" />
+    <ClCompile Include="pch_mcts.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

@@ -136,6 +136,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Software\lib\boost_1_66_0\bin.v2\libs\program_options\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\thread\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\system\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\date_time\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\chrono\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\filesystem\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Message>del C:\MyData\Projects\gra_w_pana\dbg_logs\*</Message>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>python C:\MyData\Projects\gra_w_pana\tools\make_graphs.py -folder C:\MyData\Projects\gra_w_pana\dbg_logs -f</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
