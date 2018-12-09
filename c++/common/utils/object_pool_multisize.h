@@ -154,11 +154,20 @@ struct ObjectPoolMultisize
 		free(reinterpret_cast<uint8_t*>(ptr), num_chunks);
 	}
 
-	void reset_stats()
+	void free_all()
 	{
-		max_usage = 0;
+		for (auto it : blocks)
+		{
+			auto & cb = *(it.second);
+			cb.mask.clear();
+			cb.num_free_chunks = 0;
+		}
+		tot_current_usage = 0;
 	}
-	size_t get_max_usage() { return max_usage; }
+	void reset_stats()			{ max_usage = 0;			}
+	size_t get_max_usage()		{ return max_usage;			}
+	size_t get_current_usage()	{ return tot_current_usage; }
+
 protected:
 	ChunkBlock* allocChunkBlock()
 	{

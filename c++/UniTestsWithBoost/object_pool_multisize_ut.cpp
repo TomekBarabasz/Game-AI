@@ -7,7 +7,7 @@
 #define UNIT_TEST
 #include <object_pool_multisize.h>
 
-namespace but = boost::unit_test;
+namespace ut = boost::unit_test;
 namespace butd = boost::unit_test::data;
 
 BOOST_AUTO_TEST_SUITE(bit_mask);

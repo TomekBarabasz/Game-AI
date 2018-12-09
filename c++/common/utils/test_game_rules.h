@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include "GameRules.h"
+#include <algorithm>
 
 using std::map;
 using std::vector;
@@ -32,6 +33,16 @@ struct GameState
 
 struct TestGameRules: IGameRules
 {
+	/*TestGameRules(){}
+	TestGameRules(const TestGameRules& other)
+	{
+		m_tree = other.m_tree;
+	}
+	TestGameRules& operator=(TestGameRules&& other)
+	{
+		m_tree = std::move(other.m_tree);
+		return *this;
+	}*/
 	void SetRandomGenerator(IRandomGenerator*) override {}
 	GameState* CreateRandomInitialState(IRandomGenerator*) override
 	{
@@ -40,6 +51,13 @@ struct TestGameRules: IGameRules
 	GameState* CreateInitialStateFromHash(const uint32_t*) override
 	{
 		throw "not implemented";
+	}
+	GameState*	CreateStateFromString(const wstring& sstr) override
+	{
+		auto it = std::find_if(m_tree.begin(), m_tree.end(), [&](const GameState& gs){
+			return gs.name == sstr;
+		});
+		return &*it;
 	}
 	GameState* CopyGameState(const GameState*) override
 	{
@@ -66,7 +84,12 @@ struct TestGameRules: IGameRules
 	}
 	MoveList* GetPlayerLegalMoves(const GameState* s, int player) override
 	{
-		return const_cast<MoveList*>( &(s->playerMoves.at(player)) );
+		static MoveList empty;
+		if (s->isTerminal) return &empty;
+		auto it = s->playerMoves.find(player);
+		/*auto & m = s->playerMoves;
+		for (auto & [player, ml] : m){}*/
+		return it != s->playerMoves.end() ? const_cast<MoveList*>(&(it->second)) : &empty;
 	}
 	void ReleaseMoveList(MoveList*) override
 	{
@@ -133,3 +156,41 @@ struct TestGameRules: IGameRules
 	vector<GameState> m_tree;
 };
 TestGameRules Load(const char *filename);
+
+struct state_builder
+{
+	GameState *gs;
+	state_builder(GameState* gs_, const wchar_t* name, int current_player) :gs(gs_)
+	{
+		//gs = new GameState { name, current_player, false };
+		*gs = { name, current_player, false };
+	}
+	state_builder& move(const wchar_t* name, GameState* target, int player=-1)
+	{
+		if (-1 == player) player = gs->player;
+		gs->playerMoves[player].moves.push_back({name, target});
+		return *this;
+	}
+	state_builder& score(std::initializer_list<int> score)
+	{
+		gs->isTerminal = true;
+		int idx = 0;
+		for (int sc : score) {
+			gs->score[idx++] = sc;
+		}
+		return *this;
+	}
+	state_builder& noop(int player)
+	{
+		gs->playerMoves[player].moves.push_back({ L"noop",gs });
+		return *this;
+	}
+	GameState* make()
+	{
+		return gs;
+	}
+};
+inline state_builder new_state(GameState *gs, const wchar_t* name, int current_player)
+{
+	return state_builder(gs, name, current_player);
+}

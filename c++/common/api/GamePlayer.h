@@ -18,7 +18,6 @@ struct IGamePlayer
 	virtual NamedMetrics_t	getGameStats	() = 0;
 	virtual std::string		getName			() = 0;
 	virtual void			resetStats		() = 0;
-	virtual void			enableTrace		(bool) = 0;
 	virtual void			release			() = 0;
 
 protected:

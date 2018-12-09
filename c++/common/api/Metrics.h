@@ -57,6 +57,20 @@ struct Histogram
 		return *this;
 	}
 };
+template<>
+Histogram <std::string>::Histogram() {}
+template<>
+std::string  Histogram<std::string>::to_string() const
+{
+	std::ostringstream ss;
+	for (auto kv : values) {
+		ss << kv.first << ":" << std::to_string(kv.second) << ",";
+	}
+
+	std::string result(ss.str());
+	if (!result.empty()) result.pop_back();
+	return result;
+}
 template <>
 float Histogram<float>::round(float val) const
 {
@@ -67,6 +81,7 @@ long Histogram<long>::round(long val) const
 {
 	return val / Precision;
 }
+
 template <typename T>
 struct Average
 {
@@ -90,7 +105,7 @@ namespace std {
 	string to_string(const Histogram<T>& h) { return h.to_string(); }
 	template <typename T>
 	string to_string(const Average<T>& a) { return a.to_string(); }
-	inline string to_string(const string& s) { return s; }
+	inline string to_string(const string s) { return s; }
 	inline string to_string(const chrono::duration<long long, nano>& duration)
 	{
 		const long long miliseconds = chrono::duration_cast<chrono::milliseconds>(duration).count();
@@ -110,7 +125,6 @@ namespace std {
 	}
 }
 
-//using GameMetric_t = boost::variant<long, float, Histogram<long>, Histogram<float>>;
 using Duration_t = std::chrono::duration<long long, std::nano>;
-using Metric_t = boost::variant<int, float, std::string, Duration_t, Average<long>, Average<float>, Histogram<long>, Histogram<float>>;
+using Metric_t = boost::variant<int, float, std::string, Duration_t, Average<long>, Average<float>, Histogram<long>, Histogram<float>, Histogram<std::string>>;
 using NamedMetrics_t = std::unordered_map<std::string, Metric_t>;
