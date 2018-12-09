@@ -20,11 +20,10 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{E33E9035-2529-4CA3-ABE4-B12DBDBC008C}</ProjectGuid>
+    <ProjectGuid>{8EA88872-71FB-469B-97A6-CC26001520C0}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>UniTestsWithBoost</RootNamespace>
+    <RootNamespace>MCTSPlayerut</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
-    <ProjectName>GraWPanaZasadyV2_ut</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -89,7 +88,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;_SILENCE_CXX17_ALLOCATOR_VOID_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>C:\Software\lib\boost_1_66_0;..\common\api;..\common\utils</AdditionalIncludeDirectories>
@@ -98,7 +97,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Software\lib\boost_1_66_0\bin.v2\libs\program_options\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\thread\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\system\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\date_time\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\chrono\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\test\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Software\lib\boost_1_66_0\bin.v2\libs\program_options\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\thread\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\system\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\date_time\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\chrono\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\test\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\filesystem\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;$(SolutionDir)MCTSPlayer\$(Platform)\$(Configuration)\;$(SolutionDir)GraWPanaZasadyV2\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>MCTSPlayer.obj;MCTSPlayer_diagnostics.obj;MCTSPlayer_factory.obj;pch_mcts.obj;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -143,7 +143,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>C:\Software\lib\boost_1_66_0;..\common\api;..\common\utils</AdditionalIncludeDirectories>
@@ -157,11 +157,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\common\utils\test_game_rules.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="game_rules_v2.cpp" />
-    <ClCompile Include="object_pool_multisize_ut.cpp" />
+    <ClCompile Include="..\common\utils\test_game_rules.cpp" />
+    <ClCompile Include="MCTSPlayer_gwp_ut.cpp" />
+    <ClCompile Include="MCTSPlayer_ut.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

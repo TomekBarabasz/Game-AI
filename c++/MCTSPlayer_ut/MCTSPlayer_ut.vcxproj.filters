@@ -18,15 +18,21 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\common\utils\test_game_rules.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="game_rules_v2.cpp">
+    <ClCompile Include="MCTSPlayer_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="object_pool_multisize_ut.cpp">
+    <ClCompile Include="..\common\utils\test_game_rules.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MCTSPlayer_gwp_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

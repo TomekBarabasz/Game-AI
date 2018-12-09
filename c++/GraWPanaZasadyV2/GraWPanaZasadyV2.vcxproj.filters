@@ -29,10 +29,10 @@
     <ClCompile Include="GraWPanaZasadyV2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\dllmain.cpp">
+    <ClCompile Include="..\common\utils\dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="pch_gwp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
