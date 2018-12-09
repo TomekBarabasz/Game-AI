@@ -206,3 +206,13 @@ c++/.vs/gra_w_pana/v15/ipch/ba5f0075c4b19c0c.ipch
 /mcts_tree_dump_s1.svg
 /mcts_tree_dump_s1.gv
 /make_graphs.py
+/c++/.vs/GamePlayingAI/v15/ipch
+/c++/.vs/GamePlayingAI/v15
+/c++/GameController/x64
+/c++/GameLauncher/x64
+/c++/GraWZombiakiZasady/x64
+/c++/GraWZombiakiZasady_ut/x64
+/c++/MCTSPlayer/x64
+/c++/MCTSPlayer_ut/x64
+/c++/SimpleStrategyPlayer/x64
+/dbg_logs
