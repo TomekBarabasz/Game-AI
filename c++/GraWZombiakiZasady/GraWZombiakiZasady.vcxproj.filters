@@ -21,27 +21,27 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GraWZombiakiZasady.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MinMaxABPlayer.cpp">
+    <ClCompile Include="GraWZombiakiZasady.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dllmain.cpp">
+    <ClCompile Include="..\common\utils\dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="pch_gwz.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MinMaxPlayer_factory.cpp">
+    <ClCompile Include="Plansza.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MinMaxPlayer_iterative_deepening.cpp">
+    <ClCompile Include="Karty.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MinMaxPlayer_multi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MinMaxPlayer_common.cpp">
+    <ClCompile Include="Akcje.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

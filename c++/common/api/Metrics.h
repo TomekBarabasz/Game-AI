@@ -1,17 +1,20 @@
 #pragma once
 #include <boost/variant.hpp>
 #include <chrono>
+#include <map>
 #include <unordered_map>
 
 template <typename T>
 struct Histogram
 {
-	T Precision;
-	std::unordered_map<T, unsigned> values;
-	using ValueType_t = typename std::unordered_map<T, unsigned>::value_type;
+	char m_prefix;
+	T m_rounding;
+	std::map<T, unsigned> values;
+	using ValueType_t = typename std::map<T, unsigned>::value_type;
 
-	Histogram() : Precision( T(1) ) {}
-	Histogram(T precision) : Precision(precision){}
+	Histogram() : m_prefix(0), m_rounding(1) {}
+	Histogram<T>& Prefix(const char p) { m_prefix = p; return *this; }
+	Histogram<T>& Rounding(int digits);
 	T round(T val) const { return val; }
 	void insert(T val)
 	{
@@ -20,6 +23,7 @@ struct Histogram
 		if (it != values.end()) it->second += 1;
 		else values[rval] = 1;
 	}
+	std::string val_to_string(T val) const;
 	std::string to_string() const
 	{
 #if 0
@@ -36,7 +40,7 @@ struct Histogram
 #else
 		std::ostringstream ss;
 		for (auto kv : values) {
-			ss << std::to_string(kv.first) << ":" << std::to_string(kv.second) << ",";
+			ss << val_to_string(kv.first) << ":" << std::to_string(kv.second) << ",";
 		}
 		//ss.str().erase(ss.str().size()-1, 1);
 		//return ss.str().erase(ss.str().size()-1, 1);
@@ -58,9 +62,49 @@ struct Histogram
 	}
 };
 template<>
-Histogram <std::string>::Histogram() {}
+inline Histogram<long>& Histogram<long>::Rounding(int digits)
+{
+	m_rounding = (int)pow(10, digits);
+	return *this;
+}
+template <>
+inline long Histogram<long>::round(long val) const
+{
+	return (val / m_rounding) * m_rounding;
+}
+template <>
+inline std::string Histogram<long>::val_to_string(long val) const
+{
+	switch(m_prefix)
+	{
+	case 'K':	return std::to_string(val / 1000) + 'K';
+	case 'M':	return std::to_string(val / 1000000) + 'M';
+	default:	return std::to_string(val);
+	}
+}
 template<>
-std::string  Histogram<std::string>::to_string() const
+inline Histogram<float>& Histogram<float>::Rounding(int digits)
+{
+	m_rounding = (float)pow(10, -digits);
+	return *this;
+}
+template <>
+float Histogram<float>::round(float val) const
+{
+	return float(int(val / m_rounding) * m_rounding);
+}
+template <>
+inline std::string Histogram<float>::val_to_string(float val) const
+{
+	switch (m_prefix)
+	{
+	case 'm':	return std::to_string(val * 1000) + 'm';
+	case 'u':	return std::to_string(val * 1000000) + 'u';
+	default:	return std::to_string(val);
+	}
+}
+template<>
+inline std::string  Histogram<std::string>::to_string() const
 {
 	std::ostringstream ss;
 	for (auto kv : values) {
@@ -71,16 +115,10 @@ std::string  Histogram<std::string>::to_string() const
 	if (!result.empty()) result.pop_back();
 	return result;
 }
+template<>
+Histogram<std::string>::Histogram(){}
 template <>
-float Histogram<float>::round(float val) const
-{
-	return float(int(val * Precision) / Precision);
-}
-template <>
-long Histogram<long>::round(long val) const
-{
-	return val / Precision;
-}
+inline std::string Histogram<std::string>::val_to_string(std::string val) const { return val; }
 
 template <typename T>
 struct Average
