@@ -40,7 +40,7 @@ struct MinMaxABPlayer_mp : IGamePlayer
 	}
 	void	resetStats() override {}
 	void	startNewGame() override {}
-	void	endGame() override {}
+	void	endGame(int score, GameResult result) override {}
 	std::string getName() override { return "minmax ab multiplayer depth " + std::to_string(max_depth); }
 
 	MoveList* selectMove(GameState* gs) override

@@ -6,28 +6,14 @@
 #include "object_pool_multisize.h"
 #include <boost/bimap.hpp>
 
+struct ITrace;
+struct Move;
 using std::string;
 using std::wstring;
-using std::vector;
 
-struct GameState;
-struct MoveList;
-struct Move;
-struct IGameRules;
-struct ITrace;
-
-namespace MCTS
+namespace MC
 {
-	struct IMoveLimit
-	{
-		virtual void start() = 0;
-		virtual bool can_continue() = 0;
-		virtual void release() = 0;
-	protected:
-		virtual ~IMoveLimit() {}
-	};
-
-	struct Config
+	struct MCTSConfig
 	{
 		int			PlayerNumber;
 		int			NumberOfPlayers;
@@ -40,6 +26,14 @@ namespace MCTS
 		string		outDir;
 		string		traceMoveFilename;
 		string		gameTreeFilename;
+	};
+	struct IMoveLimit
+	{
+		virtual void start() = 0;
+		virtual bool can_continue() = 0;
+		virtual void release() = 0;
+	protected:
+		virtual ~IMoveLimit() {}
 	};
 
 	struct StateNode;
@@ -61,9 +55,9 @@ namespace MCTS
 		MoveList*		moveList;		//8
 		int				numVisited;		//4
 		unsigned char	currentPlayer;	//1
-		unsigned char	occured  : 1;	//1bit 1 means this state occured during real game
+		unsigned char	occured : 1;	//1bit 1 means this state occured during real game
 		unsigned char	terminal : 1;	//1bit
-		unsigned char	temporary: 1;	//1 : 0=this state is part of the game tree, 1=created during playout, not yet included
+		unsigned char	temporary : 1;	//1 : 0=this state is part of the game tree, 1=created during playout, not yet included
 		unsigned char	occupied;		//1
 		unsigned short	lastVisitId;	//2
 		unsigned char	numMoves;		//1
@@ -72,16 +66,17 @@ namespace MCTS
 		void free(IGameRules *gr);
 		std::tuple<MoveNode*, Move*, StateNode*> getBestMove(IGameRules *gr);
 		ValidMoveList* listValidMoves(unsigned short visit_id, std::function<ValidMoveList*(int)> alloc) const;
+		static StateNode* create(GameState*, IGameRules* gameRules, std::function<StateNode*(int)>);
 	};
 
 	struct ValidMoveList
 	{
 		bool empty() const { return 0 == size; }
-		void remove(uint8_t value) 
+		void remove(uint8_t value)
 		{
 			//NOTE: assumes that value is always present in the array!
 			--size;
-			for (int i=0; i<size; ++i) {
+			for (int i = 0; i < size; ++i) {
 				if (indices[i] == value) {
 					indices[i] = indices[size];
 					break;
@@ -93,13 +88,13 @@ namespace MCTS
 		uint8_t indices[1];
 		//next will follow
 	};
-
 #pragma pack(pop)
-	using Path_t = std::vector< std::pair<StateNode*, MoveNode*> >;
 
+	using Path_t = std::vector< std::pair<MC::StateNode*, MoveNode*> >;
+	using CLK = std::chrono::high_resolution_clock;
 	struct Player : IGamePlayer
 	{
-		const Config	m_cfg;
+		const MCTSConfig	m_cfg;
 		EvalFunction_t	m_eval_function;
 		IMoveLimit		*m_mv_limit;
 		ITrace			*m_trace;
@@ -119,12 +114,12 @@ namespace MCTS
 		StatesBimap		m_states_in_game_tree;
 		unsigned short	m_curr_visit_id = 0;
 
-		Player(const Config cfg, IMoveLimit *mv_limit, ITrace* trace);
+		Player(const MCTSConfig cfg, IMoveLimit *mv_limit, ITrace* trace);
 		~Player();
 		void	seed(unsigned long seed) { m_generator.seed(seed); }
 		void	release() override { delete this; }
 		void	startNewGame() override { m_move_nbr = 1; }
-		void	endGame() override;
+		void	endGame(int score, GameResult result) override;
 		void	setGameRules(IGameRules* gr)       override { m_game_rules = gr; }
 		void	setEvalFunction(EvalFunction_t ef) override { m_eval_function = ef; }
 		NamedMetrics_t	getGameStats() override;

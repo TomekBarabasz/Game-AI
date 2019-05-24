@@ -33,7 +33,7 @@ struct MinMaxABPlayer_iterativeDeepening : IGamePlayer
 	}
 	void	release() override { delete this; }
 	void	startNewGame() override {}
-	void	endGame() override {}
+	void	endGame(int score, GameResult result) override {}
 	void	setGameRules(IGameRules* gr) override { m_game_rules = gr; }
 	void	setEvalFunction(EvalFunction_t ef) override { m_eval_function = ef; }
 	NamedMetrics_t	getGameStats() override

@@ -1,12 +1,12 @@
 #include "pch.h"
 #include "MCTSPlayer.h"
 #include <boost/dll/alias.hpp> // for BOOST_DLL_ALIAS  
-#include <chrono>
 #include <Trace.h>
 
-using CLK = std::chrono::high_resolution_clock;
-
-namespace MCTS
+namespace MCRL {
+	IGamePlayer* createMCRLPlayer(int player_number, const PlayerConfig_t& pc);
+};
+namespace MC
 {
 	struct NumSimMoveLimit : IMoveLimit
 	{
@@ -43,7 +43,7 @@ namespace MCTS
 	}
 	IGamePlayer* createMCTSPlayer(int player_number, const PlayerConfig_t& pc)
 	{
-		Config cfg;
+		MCTSConfig cfg;
 
 		cfg.PlayerNumber = player_number;
 		cfg.seed = pc.get_optional<unsigned long>("random_seed").get_value_or(unsigned(CLK::now().time_since_epoch().count()));
@@ -59,9 +59,16 @@ namespace MCTS
 		auto move_limit = createMoveLimit(pc);
 		return new Player(cfg, move_limit, logger);
 	}
+	IGamePlayer* createMCPlayer(int player_number, const PlayerConfig_t& pc)
+	{
+		auto type = pc.get_optional<string>("type").get_value_or("mcts");
+		if (type == "mcrl")	return MCRL::createMCRLPlayer(player_number, pc);
+		if (type == "mcts")	return createMCTSPlayer(player_number, pc);
+		return createMCTSPlayer(player_number, pc);
+	}
 }
 
 BOOST_DLL_ALIAS(
-	MCTS::createMCTSPlayer,	// <-- this function is exported with...
+	MC::createMCPlayer,	// <-- this function is exported with...
 	createPlayer			// <-- ...this alias name
 )

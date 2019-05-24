@@ -38,10 +38,13 @@
     <ClCompile Include="MCTSPlayer_diagnostics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MCTSPlayer_factory.cpp">
+    <ClCompile Include="pch_mcts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pch_mcts.cpp">
+    <ClCompile Include="MCRLplayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MCplayer_factory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

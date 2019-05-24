@@ -20,7 +20,7 @@ namespace std {
 		return out;
 	}
 }
-struct TestSimLimit : MCTS::IMoveLimit
+struct TestSimLimit : MC::IMoveLimit
 {
 	TestSimLimit(int limit) : sim_limit(limit) {}
 	int sim_done;
@@ -32,8 +32,8 @@ struct TestSimLimit : MCTS::IMoveLimit
 
 struct CreateMCTSPlayerAndGameRules
 {
-	MCTS::Config		cfg{ 0,2,1,false, 10,2.0,1234,-50,"c:\\MyData\\Projects\\gra_w_pana\\logs","","" };
-	MCTS::Player		player;
+	MC::MCTSConfig		cfg{ 0,2,1,false, 10,2.0,1234,-50,"c:\\MyData\\Projects\\gra_w_pana\\logs","","" };
+	MC::Player		player;
 	IGameRules			*gr;
 	std::function<IGameRules*(int)> createGameRules;
 	CreateMCTSPlayerAndGameRules() : player(cfg, new TestSimLimit(30), ITrace::createInstance(""))

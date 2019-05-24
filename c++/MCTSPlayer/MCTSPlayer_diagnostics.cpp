@@ -14,7 +14,7 @@ using std::wstring;
 using std::vector;
 using std::map;
 
-namespace MCTS
+namespace MC
 {
 	void Player::dumpTreeWithPath(const string& filename, StateNode* root, const Path_t& path)
 	{
