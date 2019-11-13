@@ -11,11 +11,11 @@ using EvalFunction_t = std::function<void(const GameState*, int score[], int num
 enum class GameResult { Win = 0, Draw, Loose, AbortedByRoundLimit = 1, AbortedByStateLoop = 2 };
 struct IGamePlayer
 {
-	virtual void			startNewGame	() = 0;
+	virtual void			startNewGame	(GameState* playerKnownState) = 0;
 	virtual void			endGame			(int score, GameResult result) = 0;
 	virtual void			setGameRules	(IGameRules*) = 0;
 	virtual void			setEvalFunction	(EvalFunction_t) = 0;
-	virtual MoveList*		selectMove		(GameState* gs) = 0;
+	virtual MoveList*		selectMove		(GameState* playerKnownState) = 0;
 	virtual NamedMetrics_t	getGameStats	() = 0;
 	virtual std::string		getName			() = 0;
 	virtual void			resetStats		() = 0;

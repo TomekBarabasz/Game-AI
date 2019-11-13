@@ -24,6 +24,9 @@
     <ClInclude Include="GraWZombiakiZasady.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Karty.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GraWZombiakiZasady.cpp">

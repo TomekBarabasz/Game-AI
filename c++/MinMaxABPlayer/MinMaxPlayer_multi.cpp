@@ -39,34 +39,34 @@ struct MinMaxABPlayer_mp : IGamePlayer
 		return nm;
 	}
 	void	resetStats() override {}
-	void	startNewGame() override {}
+	void	startNewGame(GameState*) override {}
 	void	endGame(int score, GameResult result) override {}
 	std::string getName() override { return "minmax ab multiplayer depth " + std::to_string(max_depth); }
 
-	MoveList* selectMove(GameState* gs) override
+	MoveList* selectMove(GameState* pks) override
 	{
 		std::chrono::time_point<CLK> tp_start = CLK::now();
-		MoveList* ml = selectMoveRec(gs, m_player_number, 0).mv;
+		MoveList* ml = selectMoveRec(pks, m_player_number, 0).mv;
 		const auto mseconds = (long)std::chrono::duration_cast<std::chrono::milliseconds>(CLK::now() - tp_start).count();
 		m_move_select_time.insert(mseconds / 1000.0f);
 		return ml;
 	}
-	Action  selectMoveRec(const GameState* gs, int current_player, int depth)
+	Action  selectMoveRec(const GameState* pks, int current_player, int depth)
 	{
-		if (m_game_rules->IsTerminal(gs))
+		if (m_game_rules->IsTerminal(pks))
 		{
 			Action a{ nullptr };
-			m_game_rules->Score(gs, a.value.data());
+			m_game_rules->Score(pks, a.value.data());
 			return a;
 		}
 		if (depth >= max_depth)
 		{
 			Action a{ nullptr };
-			m_eval_function(gs, a.value.data(), m_number_of_players);
+			m_eval_function(pks, a.value.data(), m_number_of_players);
 			return a;
 		}
 
-		MoveList * moves = m_game_rules->GetPlayerLegalMoves(gs, current_player);
+		MoveList * moves = m_game_rules->GetPlayerLegalMoves(pks, current_player);
 		const auto number_of_moves = m_game_rules->GetNumMoves(moves);
 		if (0 == depth && number_of_moves == 1) {
 			return { moves, 0 };
@@ -75,7 +75,8 @@ struct MinMaxABPlayer_mp : IGamePlayer
 
 		for (int move_idx = 0; move_idx < number_of_moves; ++move_idx)
 		{
-			auto *ngs = m_game_rules->ApplyMove(gs, m_game_rules->GetMoveFromList(moves, move_idx), current_player);
+			auto [move,p] = m_game_rules->GetMoveFromList(moves, move_idx);
+			auto *ngs = m_game_rules->ApplyMove(pks, move, current_player);
 			const int next_player = m_game_rules->GetCurrentPlayer(ngs);
 			//alpha = highest value ever - best choice for max player
 			//beta  =  lowest value ever - best choice for min player

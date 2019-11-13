@@ -70,6 +70,7 @@ struct CreateGameRules
 	GraWPanaGameRules gr;
 	CreateGameRules() : gr(2) {}
 };
+#define BOOST_TEST_EQ_UINT32_t(x,y) BOOST_TEST((uint32_t)x == (uint32_t)y)
 
 BOOST_FIXTURE_TEST_SUITE(GetPlayerLegalMoves, CreateGameRules);
 BOOST_AUTO_TEST_CASE(noop)
@@ -79,8 +80,8 @@ BOOST_AUTO_TEST_CASE(noop)
 	s.is_terminal = gr.checkIfTerminal(&s);
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 1);
-	const Move &mv = *gr.GetMoveFromList(ml, 0);
-	BOOST_TEST(mv.operation == Move::noop);
+	auto [mv,p] = gr.GetMoveFromList(ml, 0);
+	BOOST_TEST_EQ_UINT32_t(mv->operation , Move::noop);
 	gr.ReleaseMoveList(ml);
 }
 BOOST_AUTO_TEST_CASE(play_3x9)
@@ -94,12 +95,12 @@ BOOST_AUTO_TEST_CASE(play_3x9)
 
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 2);
-	const Move &mv1 = *gr.GetMoveFromList(ml, 0);
-	BOOST_TEST(mv1.operation == Move::play_cards);
-	BOOST_TEST(mv1.cards == 0b1110);
-	const Move &mv2 = *gr.GetMoveFromList(ml, 1);
-	BOOST_TEST(mv2.operation == Move::play_cards);
-	BOOST_TEST(mv2.cards == 0b0010);
+	auto [mv1, p1] = gr.GetMoveFromList(ml, 0);
+	BOOST_TEST_EQ_UINT32_t(mv1->operation , Move::play_cards);
+	BOOST_TEST_EQ_UINT32_t(mv1->cards , 0b1110);
+	auto [mv2, p2] = gr.GetMoveFromList(ml, 1);
+	BOOST_TEST_EQ_UINT32_t(mv2->operation , Move::play_cards);
+	BOOST_TEST_EQ_UINT32_t(mv2->cards , 0b0010);
 	gr.ReleaseMoveList(ml);
 }
 BOOST_AUTO_TEST_CASE(play_1_card_lower)
@@ -112,9 +113,9 @@ BOOST_AUTO_TEST_CASE(play_1_card_lower)
 
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 1);
-	const Move &mv = *gr.GetMoveFromList(ml, 0);
-	BOOST_TEST(mv.operation == Move::play_cards);
-	BOOST_TEST(mv.cards == 0b00010000);
+	auto [mv, p] = gr.GetMoveFromList(ml, 0);
+	BOOST_TEST_EQ_UINT32_t(mv->operation , Move::play_cards);
+	BOOST_TEST_EQ_UINT32_t(mv->cards , 0b00010000);
 	gr.ReleaseMoveList(ml);
 }
 BOOST_AUTO_TEST_CASE(play_quad)
@@ -127,13 +128,13 @@ BOOST_AUTO_TEST_CASE(play_quad)
 
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 2);
-	const Move &mv1 = *gr.GetMoveFromList(ml, 0);
-	BOOST_TEST(mv1.operation == Move::play_cards);
-	BOOST_TEST(mv1.cards == 0b00010000);
+	auto [mv1, p1] = gr.GetMoveFromList(ml, 0);
+	BOOST_TEST_EQ_UINT32_t(mv1->operation , Move::play_cards);
+	BOOST_TEST_EQ_UINT32_t(mv1->cards , 0b00010000);
 
-	const Move &mv2 = *gr.GetMoveFromList(ml, 1);
-	BOOST_TEST(mv2.operation == Move::play_cards);
-	BOOST_TEST(mv2.cards == 0b11110000);
+	auto [mv2, p2] = gr.GetMoveFromList(ml, 1);
+	BOOST_TEST_EQ_UINT32_t(mv2->operation , Move::play_cards);
+	BOOST_TEST_EQ_UINT32_t(mv2->cards , 0b11110000);
 	gr.ReleaseMoveList(ml);
 }
 BOOST_AUTO_TEST_CASE(take_1_card)
@@ -146,9 +147,9 @@ BOOST_AUTO_TEST_CASE(take_1_card)
 
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 1);
-	const Move &mv = *gr.GetMoveFromList(ml, 0);
-	BOOST_TEST(mv.operation == Move::take_cards);
-	BOOST_TEST(mv.cards == 0b00010000);
+	auto [mv, p] = gr.GetMoveFromList(ml, 0);
+	BOOST_TEST_EQ_UINT32_t(mv->operation , Move::take_cards);
+	BOOST_TEST_EQ_UINT32_t(mv->cards , 0b00010000);
 	gr.ReleaseMoveList(ml);
 }
 BOOST_AUTO_TEST_CASE(take_2_cards)
@@ -161,9 +162,9 @@ BOOST_AUTO_TEST_CASE(take_2_cards)
 
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 1);
-	const Move &mv = *gr.GetMoveFromList(ml, 0);
-	BOOST_TEST(mv.operation == Move::take_cards);
-	BOOST_TEST(mv.cards == 0b000100100000);
+	auto [mv, p] = gr.GetMoveFromList(ml, 0);
+	BOOST_TEST_EQ_UINT32_t(mv->operation , Move::take_cards);
+	BOOST_TEST_EQ_UINT32_t(mv->cards , 0b000100100000);
 	gr.ReleaseMoveList(ml);
 }
 BOOST_AUTO_TEST_CASE(take_3_cards)
@@ -176,9 +177,9 @@ BOOST_AUTO_TEST_CASE(take_3_cards)
 
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 1);
-	const Move &mv = *gr.GetMoveFromList(ml, 0);
-	BOOST_TEST(mv.operation == Move::take_cards);
-	BOOST_TEST(mv.cards == 0b010101000000);
+	auto [mv, p] = gr.GetMoveFromList(ml, 0);
+	BOOST_TEST_EQ_UINT32_t(mv->operation , Move::take_cards);
+	BOOST_TEST_EQ_UINT32_t(mv->cards , 0b010101000000);
 	gr.ReleaseMoveList(ml);
 }
 BOOST_AUTO_TEST_CASE(play_cards_or_take_cards)
@@ -191,12 +192,12 @@ BOOST_AUTO_TEST_CASE(play_cards_or_take_cards)
 
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
 	BOOST_TEST(gr.GetNumMoves(ml) == 2);
-	const Move &mv1 = *gr.GetMoveFromList(ml, 0);
-	BOOST_TEST(mv1.operation == Move::play_cards);
-	BOOST_TEST(mv1.cards == 0b001000000000);
-	const Move &mv2 = *gr.GetMoveFromList(ml, 1);
-	BOOST_TEST(mv2.operation == Move::take_cards);
-	BOOST_TEST(mv2.cards == 0b000101010000);
+	auto [mv1, p1] = gr.GetMoveFromList(ml, 0);
+	BOOST_TEST_EQ_UINT32_t(mv1->operation , Move::play_cards);
+	BOOST_TEST_EQ_UINT32_t(mv1->cards , 0b001000000000);
+	auto [mv2, p2] = gr.GetMoveFromList(ml, 1);
+	BOOST_TEST_EQ_UINT32_t(mv2->operation , Move::take_cards);
+	BOOST_TEST_EQ_UINT32_t(mv2->cards , 0b000101010000);
 	gr.ReleaseMoveList(ml);
 }
 BOOST_AUTO_TEST_CASE(is_terminal_1)

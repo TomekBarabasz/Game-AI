@@ -61,7 +61,7 @@ namespace MC
 
 	bool Player::dumpMoveDescription(std::wofstream& out, StateNode* sn, int dummyNodeId, const MoveNode& mv)
 	{
-		Move* mvmv = m_game_rules->GetMoveFromList(sn->moveList, mv.moveIdx);
+		auto [mvmv,p] = m_game_rules->GetMoveFromList(sn->moveList, mv.moveIdx);
 		const wstring mv_name = m_game_rules->ToWString(mvmv);
 		bool needIncrement = false;
 		if (mv.next)
@@ -161,7 +161,7 @@ namespace MC
 				boost::replace_all(state_str, L"\\n", L"|");
 				const int current_player = std::stoi(what[5]);
 
-				GameState *s = m_game_rules->CreateStateFromString(state_str);
+				auto *s = m_game_rules->CreateStateFromString(state_str);
 				StateNode *sn = makeTreeNode(s);
 				assert(sn->currentPlayer == current_player);
 				sn->numVisited = std::stoi(what[4]);
@@ -183,7 +183,8 @@ namespace MC
 				const int mvIdx = std::stoi(what[7]);
 
 				StateNode& sn = *sid2state[sid];
-				auto name2 = m_game_rules->ToWString(m_game_rules->GetMoveFromList(sn.moveList, mvIdx));
+				auto [move,p] = m_game_rules->GetMoveFromList(sn.moveList, mvIdx);
+				auto name2 = m_game_rules->ToWString(move);
 				boost::erase_all(name2, " ");
 				assert(name == name2);
 				auto it = sid2move.find(sid);

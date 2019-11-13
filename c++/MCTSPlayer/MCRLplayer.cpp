@@ -6,8 +6,11 @@
 #include <codecvt>
 #include <iostream>
 #include <fstream>
+#include <set>
 #define ENABLE_TRACE
 #include <Trace.h>
+#include <boost/xpressive/xpressive.hpp>
+using namespace boost::xpressive;
 
 namespace MCRL
 {
@@ -38,36 +41,78 @@ namespace MCRL
 
 	struct StateNode
 	{
-		MoveList*		moveList;		//8
+		static size_t	HashSize;
 		uint32_t		numVisited : 27;//4b
 		uint32_t		numMoves   : 5;	//-b
-		MoveNode		moves[1];		//8b*numMoves, next will follow
+		MoveNode		moves[1];	//8b*numMoves, next will follow
 
-		std::tuple<MoveNode*, Move*, StateNode*> getBestMove(IGameRules *gr);
-		static StateNode* create(GameState* gs, IGameRules* gameRules, std::function<StateNode*(int)> alloc)
+		static StateNode* create(GameState* pks, IGameRules* gameRules, std::function<StateNode*(int)> alloc)
 		{
-			const auto current_player = gameRules->GetCurrentPlayer(gs);
-			MoveList * move_list = gameRules->GetPlayerLegalMoves(gs, current_player);
+			const auto current_player = gameRules->GetCurrentPlayer(pks);
+			MoveList * move_list = gameRules->GetPlayerLegalMoves(pks, current_player);
 			const int number_of_moves = gameRules->GetNumMoves(move_list);
 			assert(number_of_moves < (2 << 5));
 			StateNode *node = alloc(number_of_moves);
 			node->numVisited = 0;
 			node->numMoves = number_of_moves;
-			node->moveList = move_list;
+			//node->moveList = move_list;
 			for (int move_idx = 0; move_idx < number_of_moves; ++move_idx) {
 				node->moves[move_idx] = { 0, unsigned char(move_idx), .0f };
 			}
+
 			return node;
+		}
+		static std::tuple<StateNode*,MoveList*> create(GameState* pks, IGameRules* gameRules)
+		{
+			const auto current_player = gameRules->GetCurrentPlayer(pks);
+			MoveList * move_list = gameRules->GetPlayerLegalMoves(pks, current_player);
+			const int number_of_moves = gameRules->GetNumMoves(move_list);
+			assert(number_of_moves < (2 << 5));
+			size_t totSizeInBytes = sizeof(StateNode) + (number_of_moves - 1) * sizeof(MoveNode) + HashSize*sizeof(uint32_t);
+			uint8_t *rawData = new uint8_t[totSizeInBytes];
+			StateNode *node = reinterpret_cast<StateNode*>(rawData);
+			node->numVisited = 0;
+			node->numMoves = number_of_moves;
+			//node->moveList = move_list;
+			for (int move_idx = 0; move_idx < number_of_moves; ++move_idx) {
+				node->moves[move_idx] = { 0, unsigned char(move_idx), .0f };
+			}
+			memcpy(node->getStateHash(), gameRules->GetStateHash(pks), HashSize*sizeof(uint32_t));
+
+			return { node,move_list };
+		}
+		uint32_t* getStateHash()
+		{
+			return reinterpret_cast<uint32_t*>(&moves[numMoves]);
+		}
+		void free()
+		{
+			delete[] reinterpret_cast<uint8_t*>(this);
 		}
 	};
 #pragma pack(pop)
+	struct StateNodeRef
+	{
+		const uint32_t	*hash;
+		StateNode		*node;
+	};
+	bool operator<(const StateNodeRef& a, const StateNodeRef& b)
+	{
+		const uint32_t *ha = a.hash, *hb = b.hash;
+		size_t cnt = StateNode::HashSize;
+		while(cnt-- > 0) {
+			if (*ha < *hb) return true;
+			if (*ha > *hb) return false;
+			++ha;
+			++hb;
+		}
+		return false;
+	}
 	using Path_t = std::vector< std::tuple<StateNode*, MoveNode*, float> >;
 	using CLK = std::chrono::high_resolution_clock;
-
+	size_t StateNode::HashSize;
 	struct Player : IGamePlayer
 	{
-		//ObjectPoolMultisize<sizeof(StateNode) + 4*sizeof(MoveNode), 4096> m_nodePool;	//1 chunk = state + 5 moves
-
 		Player(MCRLConfig cfg, ITrace *trace) : m_cfg(cfg), m_trace(trace)
 		{}
 		virtual ~Player()
@@ -76,7 +121,7 @@ namespace MCRL
 			m_game_rules->Release();
 			m_trace->release();
 		}
-		void startNewGame() override
+		void startNewGame(GameState*) override
 		{}
 		void endGame(int score, GameResult result) override
 		{
@@ -87,40 +132,45 @@ namespace MCRL
 		{
 			m_game_rules = gr;
 			gr->AddRef();
+			StateNode::HashSize = m_game_rules->GetStateHashSize();
 		}
 		void setEvalFunction(EvalFunction_t) override
 		{}
 
-		MoveList*	selectMove(GameState* gs) override
+		MoveList*	selectMove(GameState* pks) override
 		{
-			if (m_game_rules->GetCurrentPlayer(gs) != m_cfg.PlayerNumber) {
-				return m_game_rules->GetPlayerLegalMoves(gs, m_cfg.PlayerNumber);
+			if (m_game_rules->GetCurrentPlayer(pks) != m_cfg.PlayerNumber) {
+				return m_game_rules->GetPlayerLegalMoves(pks, m_cfg.PlayerNumber);
 			}
-			string sth = m_game_rules->ToString(gs);
-			auto it = m_visitedStates.find(sth);
+			//string sth = m_game_rules->ToString(gs);
+			auto it = m_visitedStates.find({m_game_rules->GetStateHash(pks), nullptr});
 			int selectedMoveIdx;
 			StateNode *stateNode;
+			MoveList *moves;
 			
 			if (it == m_visitedStates.end())
 			{
-				stateNode = StateNode::create(gs, m_game_rules, [this](int nom) { return _alloc(nom); });
+				auto [sn,ml] = StateNode::create(pks, m_game_rules);
+				stateNode = sn;
+				moves = ml;
 				if (stateNode->numMoves > 1) {
-					m_visitedStates[sth] = stateNode;
+					m_visitedStates.insert({ stateNode->getStateHash(), stateNode });
 				}
 				selectedMoveIdx = (int)selectOneOf(0, (int)stateNode->numMoves-1);
 			}
 			else
 			{
-				stateNode = it->second;
+				stateNode = it->node;
 				selectedMoveIdx = selectMove(stateNode, m_cfg.EERatio);
+				moves = m_game_rules->GetPlayerLegalMoves(pks, m_cfg.PlayerNumber);
 			}
-			MoveList *moves = stateNode->moveList;
 			auto *selected = m_game_rules->SelectMoveFromList(moves, selectedMoveIdx);
+			m_game_rules->ReleaseMoveList(moves);
 			if (stateNode->numMoves > 1)
 			{
 				m_currentPath.push_back({ stateNode, stateNode->moves + selectedMoveIdx, -m_cfg.MovePenalty });
 			}else {
-				_free(stateNode);
+				stateNode->free();
 			}
 			return selected;
 		}
@@ -135,11 +185,9 @@ namespace MCRL
 		void		resetStats() override {}
 		void		release() override { delete this; }
 
-		StateNode*	_alloc(int number_of_moves);
-		void		_free(StateNode* node);
 		size_t		selectOneOf(size_t first, size_t last);
-		void saveState(string filename);
-		void loadState(string filename);
+		void		saveState(string filename);
+		void		loadState(string filename);
 		void		seed(unsigned long seed) { m_generator.seed(seed); }
 		int			selectMove(StateNode* gs, double C);
 		void		releaseStateNodes();
@@ -148,7 +196,8 @@ namespace MCRL
 		const MCRLConfig m_cfg;
 		IGameRules*	m_game_rules;
 		Path_t		m_currentPath;
-		std::map<string, StateNode*> m_visitedStates;
+		//std::map<string, StateNode*> m_visitedStates;
+		std::set<StateNodeRef> m_visitedStates;
 		std::default_random_engine	m_generator;
 		ITrace			*m_trace;
 	};
@@ -157,9 +206,8 @@ namespace MCRL
 	{
 		for (auto kv : m_visitedStates)
 		{
-			StateNode *sn = kv.second;
-			m_game_rules->ReleaseMoveList(sn->moveList);
-			_free(sn);
+			StateNode *sn = kv.node;
+			sn->free();
 		}
 	}
 
@@ -204,22 +252,6 @@ namespace MCRL
 		}
 	}
 
-	StateNode* Player::_alloc(int number_of_moves)
-	{
-		//const size_t num_chunks = (number_of_moves * sizeof(MoveNode)) / m_nodePool.ChunkSize + 1;
-		//return reinterpret_cast<StateNode*>(m_nodePool.alloc(num_chunks));
-		uint8_t *raw = new uint8_t[sizeof(StateNode) + (number_of_moves - 1) * sizeof(MoveNode)];
-		return reinterpret_cast<StateNode*>(raw);
-	}
-
-	void Player::_free(StateNode* node)
-	{
-		//const size_t num_chunks = (node->numMoves * sizeof(MoveNode)) / m_nodePool.ChunkSize + 1;
-		//m_nodePool.free(reinterpret_cast<uint8_t*>(node), num_chunks);
-		uint8_t *raw = reinterpret_cast<uint8_t*>(node);
-		delete[] raw;
-	}
-
 	size_t Player::selectOneOf(size_t first, size_t last)
 	{
 		std::uniform_int_distribution<size_t> distribution(first, last);
@@ -235,10 +267,16 @@ namespace MCRL
 
 		for (auto kv : m_visitedStates)
 		{
-			auto *sn = kv.second;
-			out << "state " << kv.first << " visited " << sn->numVisited << " moves " << sn->numMoves << std::endl;
-			for (unsigned mi=0;mi<sn->numMoves;++mi)
-			{
+			auto *sn = kv.node;
+			auto *gs = m_game_rules->CreateInitialStateFromHash(kv.hash);
+			out << "state ";
+			auto *sh = sn->getStateHash();
+			for (size_t i=0;i<StateNode::HashSize; ++i) {
+				out << *sh++ << " ";
+			}
+			out << " visited " << sn->numVisited << " moves " << sn->numMoves << std::endl;
+			m_game_rules->ReleaseGameState(gs);
+			for (unsigned mi=0;mi<sn->numMoves;++mi) {
 				out << "move idx " << sn->moves[mi].moveIdx << " visited " << sn->moves[mi].numVisited << " value " << sn->moves[mi].accum << std::endl;
 			}
 		}
@@ -246,7 +284,19 @@ namespace MCRL
 
 	void Player::loadState(string filename)
 	{
-		std::ifstream out(filename);
+		std::ifstream input(filename);
+		std::string line;
+		sregex state_regex = "state ">>(s1=+_d)>>' '>>(s2=+_d)>>' '>>(s3 = +_d)>>" visited ">>(s4=+_d)>>" moves ">>(s5=+_d);
+		sregex move_regex = "move idx ">>(s1=+_d)>>" visited ">>(s2=+_d)>>" value ">>(s3=+(_d|'.'));
+		smatch what;
+
+		while (std::getline(input, line))
+		{
+			if (regex_match(line, what, state_regex))
+			{
+			}
+			
+		}
 	}
 
 	IGamePlayer* createMCRLPlayer(int player_number, const PlayerConfig_t& pc)

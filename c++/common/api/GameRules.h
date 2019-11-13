@@ -16,6 +16,8 @@ struct IGameRules
 	virtual GameState*	CreateRandomInitialState	(IRandomGenerator*) = 0;
 	virtual GameState*	CreateInitialStateFromHash	(const uint32_t*) = 0;
 	virtual GameState*	CreateStateFromString		(const wstring&) = 0;
+	virtual GameState*	CreatePlayerBeliefState		(const GameState*, int playerNum) = 0;
+	virtual void		UpdatePlayerKnownState		(GameState* playerKnownState, const GameState* completeGameState, const std::vector<MoveList*>& playerMoves, int playerNum) = 0;
 	virtual GameState*	CopyGameState				(const GameState*) = 0;
 	virtual bool		AreEqual					(const GameState*, const GameState*) = 0;
 	virtual void		ReleaseGameState			(GameState*) = 0;
@@ -25,7 +27,7 @@ struct IGameRules
 	virtual MoveList*	GetPlayerLegalMoves			(const GameState*, int playerNum) = 0;
 	virtual void		ReleaseMoveList				(MoveList*) = 0;
 	virtual int			GetNumMoves					(const MoveList*) = 0;
-	virtual Move*		GetMoveFromList				(MoveList*, int idx) = 0;
+	virtual std::tuple<Move*, float> GetMoveFromList(MoveList*, int idx) = 0;
 	virtual MoveList*	SelectMoveFromList			(const MoveList*, int idx) = 0;
 	//apply assumes all other players submitted Noop
 	//and will increment player number

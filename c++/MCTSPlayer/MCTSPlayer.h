@@ -51,7 +51,7 @@ namespace MC
 
 	struct StateNode
 	{
-		GameState*		state;			//8
+		GameState*		state;		//8
 		MoveList*		moveList;		//8
 		int				numVisited;		//4
 		unsigned char	currentPlayer;	//1
@@ -118,7 +118,7 @@ namespace MC
 		~Player();
 		void	seed(unsigned long seed) { m_generator.seed(seed); }
 		void	release() override { delete this; }
-		void	startNewGame() override { m_move_nbr = 1; }
+		void	startNewGame(GameState*) override { m_move_nbr = 1; }
 		void	endGame(int score, GameResult result) override;
 		void	setGameRules(IGameRules* gr)       override { m_game_rules = gr; }
 		void	setEvalFunction(EvalFunction_t ef) override { m_eval_function = ef; }
@@ -129,15 +129,15 @@ namespace MC
 		void _dumpGameTree();
 		MoveList* selectMove(GameState* gs) override;
 		void runSingleSimulation();
-		MoveList* runNSimulations(GameState* gs, int totNumSimulations);
+		MoveList* runNSimulations(GameState* bs, int totNumSimulations);
 		string makeTreeFilename(const char* basename);
-		StateNode* findRootNode(GameState * s);
+		StateNode* findRootNode(GameState* s);
 		enum class VisitTreeOpResult { Cont=0, Abort, Skip  };
 		static void visitTree(StateNode* node, unsigned short id, std::function<bool(StateNode*)> visit);
 		static bool visitTreeDepthFirstInt(StateNode* node, unsigned short visit_id, std::function<Player::VisitTreeOpResult(StateNode*, int)> visit_op, int depth);
 		static void visitTreeDepthFirst(StateNode* node, unsigned short visit_id, std::function<VisitTreeOpResult(StateNode*, int)> visit_op);
 		bool checkTree(StateNode* root, unsigned short id, bool dump = true);
-		StateNode* find_breadth_first(StateNode*root, const GameState *s);
+		StateNode* find_breadth_first(StateNode*root, const GameState*s);
 		void freeSubTree(StateNode* root, unsigned short stay_alive_id, unsigned short visit_id);
 		Path_t selection_playOut(StateNode* root, unsigned short visit_id);
 		size_t selectOneOf(size_t first, size_t last);
@@ -146,7 +146,7 @@ namespace MC
 		void expansion(Path_t& path);
 		MoveNode* selectMove(StateNode* node, const ValidMoveList& moves, double C);
 		MoveNode* selectBestMove(StateNode* node);
-		StateNode* makeTreeNode(GameState* gs);
+		StateNode* makeTreeNode(GameState* pks);
 		void makeNodePermanent(StateNode * sn);
 		void freeTree(StateNode* node);
 		void freeTree(StateNode* root, std::vector<StateNode*>& toBeFreed, unsigned short visit_id);

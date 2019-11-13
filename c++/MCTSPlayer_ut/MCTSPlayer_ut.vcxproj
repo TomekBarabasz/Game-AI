@@ -23,32 +23,32 @@
     <ProjectGuid>{8EA88872-71FB-469B-97A6-CC26001520C0}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MCTSPlayerut</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -98,7 +98,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Software\lib\boost_1_66_0\bin.v2\libs\program_options\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\thread\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\system\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\date_time\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\chrono\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\test\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;C:\Software\lib\boost_1_66_0\bin.v2\libs\filesystem\build\msvc-14.1\debug\address-model-64\link-static\threadapi-win32\threading-multi;$(SolutionDir)MCTSPlayer\$(Platform)\$(Configuration)\;$(SolutionDir)GraWPanaZasadyV2\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>MCTSPlayer.obj;MCTSPlayer_diagnostics.obj;MCTSPlayer_factory.obj;pch_mcts.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>MCTSPlayer.obj;MCRLPlayer.obj;MCTSPlayer_diagnostics.obj;MCPlayer_factory.obj;pch_mcts.obj;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

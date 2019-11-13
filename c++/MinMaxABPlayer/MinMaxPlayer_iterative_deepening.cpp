@@ -8,8 +8,6 @@
 
 using CLK = std::chrono::high_resolution_clock;
 
-
-
 struct MinMaxABPlayer_iterativeDeepening : IGamePlayer
 {
 	struct Action
@@ -32,7 +30,7 @@ struct MinMaxABPlayer_iterativeDeepening : IGamePlayer
 		m_move_select_time.Rounding(2).Prefix('m');
 	}
 	void	release() override { delete this; }
-	void	startNewGame() override {}
+	void	startNewGame(GameState*) override {}
 	void	endGame(int score, GameResult result) override {}
 	void	setGameRules(IGameRules* gr) override { m_game_rules = gr; }
 	void	setEvalFunction(EvalFunction_t ef) override { m_eval_function = ef; }
@@ -44,12 +42,12 @@ struct MinMaxABPlayer_iterativeDeepening : IGamePlayer
 	}
 	void	resetStats() override {}
 	std::string getName() override { return "minmax ab id " + std::to_string(m_time_limit) + " sec"; }
-	Action  selectMoveRec(const GameState* gs, int current_player, int depth, int alpha, int beta, bool Maximize)
+	Action  selectMoveRec(const GameState* pks, int current_player, int depth, int alpha, int beta, bool Maximize)
 	{
-		if (m_game_rules->IsTerminal(gs))
+		if (m_game_rules->IsTerminal(pks))
 		{
 			int score[2];
-			m_game_rules->Score(gs, score);
+			m_game_rules->Score(pks, score);
 			return { nullptr, zeroSumValue(score) };
 		}
 		/*if (depth >= max_depth)
@@ -59,7 +57,7 @@ struct MinMaxABPlayer_iterativeDeepening : IGamePlayer
 			return { nullptr, zeroSumValue(value) };
 		}*/
 
-		MoveList * moves = m_game_rules->GetPlayerLegalMoves(gs, current_player);
+		MoveList * moves = m_game_rules->GetPlayerLegalMoves(pks, current_player);
 		const auto number_of_moves = m_game_rules->GetNumMoves(moves);
 		if (0 == depth && number_of_moves == 1)
 		{
@@ -69,7 +67,8 @@ struct MinMaxABPlayer_iterativeDeepening : IGamePlayer
 		int best_move_idx = -1;
 		for (int move_idx = 0; move_idx < number_of_moves; ++move_idx)
 		{
-			auto *ngs = m_game_rules->ApplyMove(gs, m_game_rules->GetMoveFromList(moves, move_idx), current_player);
+			auto [move,p] = m_game_rules->GetMoveFromList(moves, move_idx);
+			auto *ngs = m_game_rules->ApplyMove(pks, move, current_player);
 			//alpha = highest value ever - best choice for max player
 			//beta  =  lowest value ever - best choice for min player
 			Action a = selectMoveRec(ngs, 1 - current_player, depth + 1, alpha, beta, !Maximize);
@@ -99,10 +98,10 @@ struct MinMaxABPlayer_iterativeDeepening : IGamePlayer
 		m_game_rules->ReleaseMoveList(moves);
 		return { selected_move, best_value };
 	}
-	MoveList* selectMove(GameState* gs) override
+	MoveList* selectMove(GameState* pks) override
 	{
 		std::chrono::time_point<CLK> tp_start = CLK::now();
-		MoveList* ml = selectMoveRec(gs, m_player_number, 0, -1000, 1000, true).mv;
+		MoveList* ml = selectMoveRec(pks, m_player_number, 0, -1000, 1000, true).mv;
 		const auto mseconds = (long)std::chrono::duration_cast<std::chrono::milliseconds>(CLK::now() - tp_start).count();
 		m_move_select_time.insert(mseconds / 1000.0f);
 		return ml;

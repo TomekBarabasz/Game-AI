@@ -52,6 +52,15 @@ struct TestGameRules: IGameRules
 	{
 		throw "not implemented";
 	}
+	GameState* CreatePlayerBeliefState(const GameState*, int playerNum) override
+	{
+		throw "not implemented";
+	}
+	void UpdatePlayerKnownState(GameState* playerKnownState, const GameState* completeGameState, const std::vector<MoveList*>& playerMoves, int playerNum) override
+	{
+		throw "not implemented";
+	}
+
 	GameState*	CreateStateFromString(const wstring& sstr) override
 	{
 		auto it = std::find_if(m_tree.begin(), m_tree.end(), [&](const GameState& gs){
@@ -98,9 +107,9 @@ struct TestGameRules: IGameRules
 	{
 		return (int)ml->moves.size();
 	}
-	Move* GetMoveFromList(MoveList* ml, int idx) override
+	std::tuple<Move*, float> GetMoveFromList(MoveList* ml, int idx) override
 	{
-		return &(ml->moves[idx]);
+		return { &(ml->moves[idx]), 1.0 };
 	}
 	MoveList* SelectMoveFromList(const MoveList* ml, int idx) override
 	{
