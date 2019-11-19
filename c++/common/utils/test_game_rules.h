@@ -52,7 +52,7 @@ struct TestGameRules: IGameRules
 	{
 		throw "not implemented";
 	}
-	GameState* CreatePlayerBeliefState(const GameState*, int playerNum) override
+	GameState* CreatePlayerKnownState(const GameState*, int playerNum) override
 	{
 		throw "not implemented";
 	}

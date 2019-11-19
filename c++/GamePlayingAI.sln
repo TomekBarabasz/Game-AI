@@ -8,6 +8,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GraWPanaZasadyV2", "GraWPanaZasadyV2\GraWPanaZasadyV2.vcxproj", "{D96FF9F8-2E40-4CA7-A2FC-CCA22E0368C4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GraWPanaZasadyV2_ut", "UniTestsWithBoost\UniTestsWithBoost.vcxproj", "{E33E9035-2529-4CA3-ABE4-B12DBDBC008C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D96FF9F8-2E40-4CA7-A2FC-CCA22E0368C4} = {D96FF9F8-2E40-4CA7-A2FC-CCA22E0368C4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleStrategyPlayer", "SimpleStrategyPlayer\SimpleStrategyPlayer.vcxproj", "{24045A37-3669-4EDB-882A-CDF60DCC5CC6}"
 EndProject

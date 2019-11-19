@@ -16,7 +16,7 @@ struct IGameRules
 	virtual GameState*	CreateRandomInitialState	(IRandomGenerator*) = 0;
 	virtual GameState*	CreateInitialStateFromHash	(const uint32_t*) = 0;
 	virtual GameState*	CreateStateFromString		(const wstring&) = 0;
-	virtual GameState*	CreatePlayerBeliefState		(const GameState*, int playerNum) = 0;
+	virtual GameState*	CreatePlayerKnownState		(const GameState*, int playerNum) = 0;
 	virtual void		UpdatePlayerKnownState		(GameState* playerKnownState, const GameState* completeGameState, const std::vector<MoveList*>& playerMoves, int playerNum) = 0;
 	virtual GameState*	CopyGameState				(const GameState*) = 0;
 	virtual bool		AreEqual					(const GameState*, const GameState*) = 0;
