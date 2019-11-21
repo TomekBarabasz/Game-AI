@@ -44,14 +44,23 @@ namespace MC
 		StateNode		*next;		//8
 		unsigned char	numVisited;	//1
 		unsigned char	moveIdx;	//1
+		unsigned short	probability;//2
 		float			value[4];	//16
-		float getWeight(int player) const { return numVisited != 0 ? value[player] / numVisited : 0; }
+		float getWeight(int player) const {
+			return numVisited != 0 ? value[player] * get_probability() / numVisited : 0;
+		}
 
+		void set_probability(float p) {
+			probability = static_cast<unsigned short>(p * 65535);
+		}
+		float get_probability() const {
+			return probability / 65535.0f;
+		}
 	};
 
 	struct StateNode
 	{
-		GameState*		state;		//8
+		GameState*		state;			//8
 		MoveList*		moveList;		//8
 		int				numVisited;		//4
 		unsigned char	currentPlayer;	//1
@@ -61,6 +70,7 @@ namespace MC
 		unsigned char	occupied;		//1
 		unsigned short	lastVisitId;	//2
 		unsigned char	numMoves;		//1
+		unsigned char	pad[2];			//4
 		MoveNode		moves[1];		//next will follow
 
 		void free(IGameRules *gr);
@@ -103,7 +113,7 @@ namespace MC
 		StateNode		*m_super_root = nullptr;
 		std::default_random_engine	m_generator;
 		ObjectPoolMultisize<4 * sizeof(MoveNode), 4096> m_nodePool;					//1 chunk = 1 statenode + 4 moves
-		ObjectPoolMultisize<2 * sizeof(ValidMoveList), 256> m_validMoveListPool;	//1 chunk = 3 moves
+		ObjectPoolMultisize<2 * sizeof(ValidMoveList), 16384> m_validMoveListPool;	//1 chunk = 3 moves
 		int				m_move_nbr = 1;
 		int				m_game_nbr = 1;
 		Histogram<long>	m_nodePool_usage;

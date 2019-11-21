@@ -2,11 +2,11 @@
 <config>
   <game num_games="1000" round_limit="100" num_threads="1" provider="GraWPanaZasadyV2" verbose="game.log" save="results.xml" out_dir="c:\MyData\Projects\gra_w_pana\logs" sync_player="2" />
   <players>
-    <player provider="minmaxabplayer" search_depth="5" move_time_limit="1" eval_function="num_cards"></player>
-    <_player provider="minmaxabplayer" search_depth="11" move_time_limit="1" eval_function="num_cards_weighted" />
-    <_player provider="mctsplayer" explore_exploit_ratio="2.0" playout_depth="20" expand_size="3" expand_from_last_permanent_node="1" _move_sim_limit="30" move_time_limit="1" _trace_move_filename="mcts_move_tree" _game_tree_filename="mcts_game_tree" _trace="mcts.log" out_dir="c:\MyData\Projects\gra_w_pana\dbg_logs" type="mcts" />
-    <player provider="mctsplayer" type="mcrl" explore_exploit_ratio="1.5" out_dir="c:\MyData\Projects\gra_w_pana\dbg_logs" policy_filename="c:\MyData\Projects\gra_w_pana\logs\gra_w_pana_policy.txt" />
-    <_player provider="SimpleStrategyPlayer" type="lowcard" />
-    <_player provider="SimpleStrategyPlayer" type="random" />
+    <player name="ab11ncw" provider="minmaxabplayer" search_depth="11" _move_time_limit="1" eval_function="num_cards_weighted" />
+    <player name="ab11nco" provider="minmaxabplayer" search_depth="11" _move_time_limit="1" eval_function="num_cards" />
+    <player name="mcts" provider="mctsplayer" explore_exploit_ratio="2.0" playout_depth="20" expand_size="3" expand_from_last_permanent_node="1" move_sim_limit="5" _move_time_limit="1" trace_move_filename="mcts_move_tree" _game_tree_filename="mcts_game_tree" _trace="mcts.log" out_dir="c:\MyData\Projects\gra_w_pana\dbg_logs" type="mcts" />
+    <player name="mcrl" provider="mctsplayer" type="mcrl" explore_exploit_ratio="1.5" out_dir="c:\MyData\Projects\gra_w_pana\dbg_logs" policy_filename="c:\MyData\Projects\gra_w_pana\logs\gra_w_pana_policy.txt" />
+    <player name="lowcard" type="lowcard" provider="SimpleStrategyPlayer" />
+    <player name="random" provider="SimpleStrategyPlayer" type="random" />
   </players>
 </config>

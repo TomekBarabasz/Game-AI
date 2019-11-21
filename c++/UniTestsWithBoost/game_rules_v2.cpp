@@ -297,7 +297,7 @@ BOOST_AUTO_TEST_CASE(play_quad_iig)
 	GameState s;
 	s.current_player = 0;
 	s.stack = mkmb({ 00,00,00,11 });
-	s.hand[0] = mkmb({ 01,10,01,10,00,00,00,00 });
+	s.hand[0] = mkmb({ 11,10,01,10,00,00,00,00 });
 	s.is_terminal = gr.checkIfTerminal(&s);
 
 	MoveList* ml = gr.GetPlayerLegalMoves(&s, 0);

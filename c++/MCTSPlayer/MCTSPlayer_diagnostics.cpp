@@ -64,20 +64,24 @@ namespace MC
 		auto [mvmv,p] = m_game_rules->GetMoveFromList(sn->moveList, mv.moveIdx);
 		const wstring mv_name = m_game_rules->ToWString(mvmv);
 		bool needIncrement = false;
+		
 		if (mv.next)
 		{
+			const float prob = mv.get_probability();
+			assert(prob != 0);
 			if (mv.next->occupied) {
 				out << L"\"" << sn << L"\" -> \"" << mv.next << L"\" [label = \"" << mv_name << L" nv = " << mv.numVisited;
 				out << L"\\nval = " << mv.value[0] / mv.numVisited;
 				for (int i = 1; i < m_cfg.NumberOfPlayers; ++i) {
+				//for (int i = 1; i < 4; ++i) {
 					out << L"," << mv.value[i] / mv.numVisited;
 				}
-				out << L"\" mvidx=\"" << mv.moveIdx << "\"]" << std::endl;
+				out << L"\" mvidx=\"" << mv.moveIdx << L"\" prob=\"" << prob << "\"]" << std::endl;
 			}
 			else
 			{
 				out << L"\"" << sn << L"\" -> \"" << mv.next << L"\" [label = \"" << mv_name << L" corrupted\"";
-				out << L" mvidx=\"" << mv.moveIdx << "\" color=red]" << std::endl;
+				out << L" mvidx=\"" << mv.moveIdx << L"\" prob=\"" << prob << "\" color=red]" << std::endl;
 				out << L"\"" << mv.next << L"\" [label=\"corrupted\" color=red]" << std::endl;
 				needIncrement = false;
 			}
@@ -130,6 +134,8 @@ namespace MC
 		return loadTree(input);
 	}
 
+	BOOST_XPRESSIVE_GLOBAL_MARK_TAG(s10, 10);
+	BOOST_XPRESSIVE_GLOBAL_MARK_TAG(s11, 11);
 	std::tuple<StateNode*, Path_t> Player::loadTree(std::wifstream& input)
 	{
 		wstring line;
@@ -138,8 +144,8 @@ namespace MC
 		//"000000000080CE10" [label="000000000071ACC8 \nS=9♥10♥10♠W♥W♠A♦\nP0=9♠10♣\nP1=9♣9♦10♦W♣W♦D♥D♠D♣D♦K♥K♠K♣K♦A♥A♠A♣\nCP=1" num_visited="8" CP="1" used="1" refCnt="1" ]
 		wsregex state_regex = '"' >> (s1 = +_) >> L"\"[label=\"" >> (s2 = -+_) >> L"\\n" >> (s3 = +_) >> L"\"num_visited=\"" >> (s4 = +_d) >> L"\"CP=\"" >> (s5 = +_d) >> "\"occured=\"" >> (s6 = +_d) >> "\"temp=\"" >> (s7 = +_d) >> "\"" >> L"term=\"" >> (s8=+_d) >> "\"" >> (s9=*_) >> ']';
 
-		//"000000000080D5F0" -> "000000000080D350" [label = "play A♥ nv = 1\nval = 0.26,0.28" moveidx="1"]
-		wsregex move_regex      = '"' >> (s1 = +_) >> L"\"->\"" >> (s2 = +_) >> L"\"[label=\"" >> (s3=+_) >> L"nv=" >> (s4 = +_d) >> L"\\nval=" >> (s5=+(_d|'.')) >> "," >> (s6=+(_d|'.')) >> "\"mvidx=\"" >> (s7=+_d) >> "\"" >> (s8=*_) >> ']';
+		//"000000000080D5F0" -> "000000000080D350" [label = "play A♥ nv = 1\nval = 0.26,0.27,0.28,0.29" moveidx="1" prob="0.5"]
+		wsregex move_regex      = '"' >> (s1 = +_) >> L"\"->\"" >> (s2 = +_) >> L"\"[label=\"" >> (s3=+_) >> L"nv=" >> (s4 = +_d) >> L"\\nval=" >> (s5=+(_d|'.')) >> "," >> (s6=+(_d|'.')) >> "," >> (s7 = +(_d | '.')) >> "," >> (s8 = +(_d | '.')) >> "\"mvidx=\"" >> (s9=+_d) >> "\"prob=\"" >> (s10=+(_d|'.')) >> "\"" >> (s11=*_) >> ']';
 
 		StateNode *root = nullptr;
 		map<unsigned long long, StateNode*> sid2state;
@@ -180,7 +186,10 @@ namespace MC
 				const int num_visited = std::stoi(what[4]);
 				const float val1= std::stof(what[5]) * num_visited;
 				const float val2= std::stof(what[6]) * num_visited;
-				const int mvIdx = std::stoi(what[7]);
+				const float val3= std::stof(what[7]) * num_visited;
+				const float val4= std::stof(what[8]) * num_visited;
+				const int mvIdx = std::stoi(what[9]);
+				const float prob = std::stof(what[10]);
 
 				StateNode& sn = *sid2state[sid];
 				auto [move,p] = m_game_rules->GetMoveFromList(sn.moveList, mvIdx);
@@ -192,7 +201,8 @@ namespace MC
 					it = sid2move.insert( sid2move.begin(), {sid, {}} );
 				}
 				auto &mv = it->second;
-				MoveNode mn { reinterpret_cast<StateNode*>(target_sid), (unsigned char)num_visited, (unsigned char)mvIdx, {val1,val2,0,0} };
+				MoveNode mn { reinterpret_cast<StateNode*>(target_sid), static_cast<uint8_t>(num_visited), static_cast<uint8_t>(mvIdx), 0, {val1,val2,val3,val4} };
+				mn.set_probability(prob);
 				mv.push_back( mn );
 			}
 		}

@@ -222,3 +222,6 @@ c++/.vs/gra_w_pana/v15/ipch/ba5f0075c4b19c0c.ipch
 /c++/RLPlayer/x64
 /c++/GameControllerLIB
 /c++/lib/Debug
+/c++/lib/Release
+/c++/lib/Release/GameControllerLIB.lib
+/c++/lib/Release/GameControllerLIB.lib

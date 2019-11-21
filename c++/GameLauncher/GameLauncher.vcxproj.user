@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>GameLauncher.exe --xml ..\..\run_config.xml -p</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>GameLauncher.exe --xml ..\..\run_config.xml --p1 lowcard --p2 mcts -p --ng 10</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>C:\MyData\Projects\gra_w_pana\c++\x64\Debug</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
