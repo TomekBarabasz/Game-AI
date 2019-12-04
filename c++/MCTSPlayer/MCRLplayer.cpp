@@ -11,6 +11,7 @@
 #include <Trace.h>
 #include <boost/xpressive/xpressive.hpp>
 using namespace boost::xpressive;
+using namespace Trace;
 
 namespace MCRL
 {
@@ -314,7 +315,7 @@ namespace MCRL
 		cfg.traceMoveFilename = pc.get_optional<string>("trace_move_filename").get_value_or("");
 		cfg.outDir = pc.get_optional<string>("out_dir").get_value_or("");
 		cfg.policyFilename = pc.get_optional<string>("policy_filename").get_value_or("");
-		auto logger = ITrace::createInstance(pc.get_optional<string>("trace").get_value_or(""), cfg.outDir);
+		auto logger = createInstance(pc.get_optional<string>("trace").get_value_or(""), cfg.outDir);
 		
 		return new Player(cfg, logger);
 	}

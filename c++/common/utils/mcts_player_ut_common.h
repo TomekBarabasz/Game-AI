@@ -4,6 +4,8 @@
 #include <vector>
 #include "GameRules.h"
 #include <algorithm>
+#include <boost/test/utils/string_cast.hpp>
+#include "MCTSPlayer.h"
 
 using std::map;
 using std::vector;
@@ -11,8 +13,9 @@ using std::vector;
 struct GameState;
 struct Move
 {
-	Move(const wstring & name, GameState* target) : m_name(name), m_target(target) {}
+	Move(const wstring & name, GameState* target,float prob=1.0f) : m_name(name), m_target(target), m_prob(prob) {}
 	wstring m_name;
+	float m_prob;
 	GameState* m_target;
 };
 
@@ -109,7 +112,8 @@ struct TestGameRules: IGameRules
 	}
 	std::tuple<Move*, float> GetMoveFromList(MoveList* ml, int idx) override
 	{
-		return { &(ml->moves[idx]), 1.0 };
+		auto & move = ml->moves[idx];
+		return { &move, move.m_prob };
 	}
 	MoveList* SelectMoveFromList(const MoveList* ml, int idx) override
 	{
@@ -140,7 +144,9 @@ struct TestGameRules: IGameRules
 	}
 	string ToString(const GameState* s) override
 	{
-		return string(s->name.begin(), s->name.end());
+		std::ostringstream oss;
+		oss << s -> name.c_str();
+		return oss.str();
 	}
 	wstring ToWString(const GameState* s) override
 	{
@@ -148,7 +154,9 @@ struct TestGameRules: IGameRules
 	}
 	string ToString(const Move* mv) override
 	{
-		return string(mv->m_name.begin(), mv->m_name.end());
+		std::ostringstream oss;
+		oss << mv->m_name.c_str();
+		return oss.str();
 	}
 	wstring ToWString(const Move* mv) override
 	{
@@ -174,10 +182,10 @@ struct state_builder
 		//gs = new GameState { name, current_player, false };
 		*gs = { name, current_player, false };
 	}
-	state_builder& move(const wchar_t* name, GameState* target, int player=-1)
+	state_builder& move(const wchar_t* name, GameState* target, float prob=1.0f, int player=-1)
 	{
 		if (-1 == player) player = gs->player;
-		gs->playerMoves[player].moves.push_back({name, target});
+		gs->playerMoves[player].moves.push_back({name, target, prob});
 		return *this;
 	}
 	state_builder& score(std::initializer_list<int> score)
@@ -203,3 +211,24 @@ inline state_builder new_state(GameState *gs, const wchar_t* name, int current_p
 {
 	return state_builder(gs, name, current_player);
 }
+
+struct TestSimLimit : MC::IMoveLimit
+{
+	TestSimLimit(int limit) : sim_limit(limit) {}
+	int sim_done;
+	const int sim_limit;
+	void start() { sim_done = 0; }
+	bool can_continue() { return ++sim_done < sim_limit; }
+	void release() { delete this; }
+};
+struct CreateMCTSPlayer
+{
+	MC::MCTSConfig		cfg{ 0,2,1,false, 10,2.0,1234,-50,"c:\\MyData\\Projects\\gra_w_pana\\logs","","" };
+	MC::Player		player;
+	CreateMCTSPlayer() : player(cfg, new TestSimLimit(30), createInstance(""))
+	{
+	}
+	~CreateMCTSPlayer()
+	{
+	}
+};

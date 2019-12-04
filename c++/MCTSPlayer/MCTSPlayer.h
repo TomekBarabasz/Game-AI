@@ -5,11 +5,12 @@
 #include "GamePlayer.h"
 #include "object_pool_multisize.h"
 #include <boost/bimap.hpp>
+#include "Trace.h"
 
-struct ITrace;
 struct Move;
 using std::string;
 using std::wstring;
+using namespace Trace;
 
 namespace MC
 {
@@ -22,10 +23,11 @@ namespace MC
 		int			MaxPlayoutDepth = 20;
 		float		EERatio;
 		unsigned	seed;
-		int			CyclePenalty = -50;
+		int			CyclePenalty = 50;
 		string		outDir;
 		string		traceMoveFilename;
 		string		gameTreeFilename;
+		float		BestMoveValueEps = 0.005f;
 	};
 	struct IMoveLimit
 	{
@@ -47,7 +49,12 @@ namespace MC
 		unsigned short	probability;//2
 		float			value[4];	//16
 		float getWeight(int player) const {
-			return numVisited != 0 ? value[player] * get_probability() / numVisited : 0;
+			//return numVisited != 0 ? value[player] * probability / numVisited : 0;
+			return value[player] * get_probability() / (1.0f + numVisited);
+		}
+		std::tuple<float,float> getWeightEx(int player) const {
+			const float ooNumVisited = 1.0f / (1.0f + numVisited);
+			return { value[player] * get_probability() * ooNumVisited,ooNumVisited };
 		}
 
 		void set_probability(float p) {
@@ -139,7 +146,7 @@ namespace MC
 		void _dumpGameTree();
 		MoveList* selectMove(GameState* gs) override;
 		void runSingleSimulation();
-		MoveList* runNSimulations(GameState* bs, int totNumSimulations);
+		std::tuple<Move*, float> runNSimulations(GameState* bs, int totNumSimulations);
 		string makeTreeFilename(const char* basename);
 		StateNode* findRootNode(GameState* s);
 		enum class VisitTreeOpResult { Cont=0, Abort, Skip  };

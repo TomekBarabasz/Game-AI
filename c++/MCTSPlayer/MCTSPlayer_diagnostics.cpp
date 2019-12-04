@@ -70,18 +70,23 @@ namespace MC
 			const float prob = mv.get_probability();
 			assert(prob != 0);
 			if (mv.next->occupied) {
-				out << L"\"" << sn << L"\" -> \"" << mv.next << L"\" [label = \"" << mv_name << L" nv = " << mv.numVisited;
-				out << L"\\nval = " << mv.value[0] / mv.numVisited;
-				for (int i = 1; i < m_cfg.NumberOfPlayers; ++i) {
-				//for (int i = 1; i < 4; ++i) {
-					out << L"," << mv.value[i] / mv.numVisited;
+				out << L"\"" << sn << L"\" -> \"" << mv.next << L"\" [label = <" << mv_name << L" nv = " << mv.numVisited;
+				out << L"<br/>val = ";
+				for (int i = 0; i < m_cfg.NumberOfPlayers; ++i) {
+					if (i > 0) out << L",";
+					if (i == sn->currentPlayer)	{
+						out << L"<b>" << mv.value[i] / mv.numVisited << "</b>";
+					}
+					else {
+						out << mv.value[i] / mv.numVisited;
+					}
 				}
-				out << L"\" mvidx=\"" << mv.moveIdx << L"\" prob=\"" << prob << "\"]" << std::endl;
+				out << L" i=" << mv.moveIdx << L" p=" << std::setprecision(3) << prob << ">]" << std::endl;
 			}
 			else
 			{
 				out << L"\"" << sn << L"\" -> \"" << mv.next << L"\" [label = \"" << mv_name << L" corrupted\"";
-				out << L" mvidx=\"" << mv.moveIdx << L"\" prob=\"" << prob << "\" color=red]" << std::endl;
+				out << L" i=" << mv.moveIdx << L" p=" << std::setprecision(3) << prob << "\" color=red]" << std::endl;
 				out << L"\"" << mv.next << L"\" [label=\"corrupted\" color=red]" << std::endl;
 				needIncrement = false;
 			}
@@ -89,7 +94,7 @@ namespace MC
 		else
 		{
 			out << L"\"" << sn << L"\" -> \"" << dummyNodeId << L"\" [label = \"" << mv_name;
-			out << L"\" mvidx=\"" << mv.moveIdx << "\"]" << std::endl;
+			out << L" i=" << mv.moveIdx << "\"]" << std::endl;
 			needIncrement = true;
 		}
 		return needIncrement;

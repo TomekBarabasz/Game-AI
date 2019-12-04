@@ -1,9 +1,9 @@
 #include "pch.h"
-#include "test_game_rules.h"
 #include <fstream>
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/erase.hpp>
+#include "mcts_player_ut_common.h"
 
 using namespace boost::xpressive;
 

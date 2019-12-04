@@ -7,36 +7,29 @@
 #define UNIT_TEST
 #include "../MCTSPlayer/MCTSPlayer.h"
 #include <Trace.h>
-#include "test_game_rules.h"
+#include "mcts_player_ut_common.h"
 //#include <GameRules.h>
 
 namespace ut = boost::unit_test;
 namespace bdata = boost::unit_test::data;
+using namespace Trace;
 
 namespace std {
-	inline std::ostream& operator<<(std::ostream& out, const std::wstring& value)
+	inline std::wostream& operator<<(std::wostream& out, const std::wstring& value)
 	{
-		out << string(value.begin(), value.end());
+		out << value;
 		return out;
 	}
 }
-struct TestSimLimit : MC::IMoveLimit
-{
-	TestSimLimit(int limit) : sim_limit(limit) {}
-	int sim_done;
-	const int sim_limit;
-	void start() { sim_done = 0; }
-	bool can_continue() { return ++sim_done < sim_limit; }
-	void release() { delete this; }
-};
 
+template <int NP>
 struct CreateMCTSPlayerAndGameRules
 {
-	MC::MCTSConfig		cfg{ 0,2,1,false, 10,2.0,1234,-50,"c:\\MyData\\Projects\\gra_w_pana\\logs","","" };
+	MC::MCTSConfig		cfg{ 0,NP,1,false, 10,2.0,1234,-50,"c:\\MyData\\Projects\\gra_w_pana\\logs","","", 0.005f };
 	MC::Player		player;
 	IGameRules			*gr;
 	std::function<IGameRules*(int)> createGameRules;
-	CreateMCTSPlayerAndGameRules() : player(cfg, new TestSimLimit(30), ITrace::createInstance(""))
+	CreateMCTSPlayerAndGameRules() : player(cfg, new TestSimLimit(30), createInstance(""))
 	{
 		createGameRules = boost::dll::import_alias<IGameRules*(int number_of_players)>(
 			"GraWPanaZasadyV2",
@@ -51,7 +44,7 @@ struct CreateMCTSPlayerAndGameRules
 	}
 };
 TestGameRules makeGameTree_type3();
-BOOST_FIXTURE_TEST_SUITE(MCTS_Player_dump_load_tree, CreateMCTSPlayerAndGameRules, *ut::disabled());
+BOOST_FIXTURE_TEST_SUITE(MCTS_Player_dump_load_tree, CreateMCTSPlayerAndGameRules<2>, *ut::disabled());
 BOOST_AUTO_TEST_CASE(dump_load_type1)
 {
 	auto r = makeGameTree_type3();
@@ -82,5 +75,25 @@ BOOST_AUTO_TEST_CASE(expansion_case_1)
 		}
 	}
 	player.expansion(path);
+}
+BOOST_AUTO_TEST_SUITE_END();
+
+BOOST_FIXTURE_TEST_SUITE(MCTS_IIG, CreateMCTSPlayerAndGameRules<4>);
+BOOST_AUTO_TEST_CASE(dump_load_type1)
+{
+	auto r = makeGameTree_type3();
+	auto root = r.CreateRandomInitialState(nullptr);
+	player.setGameRules(&r);
+
+	player.runNSimulations(root, 15);
+	const char* filename = "C:\\MyData\\Projects\\gra_w_pana\\logs\\test_tree_dump.gv";
+	player.dumpTree(filename, player.m_root);
+	player.freeTree(player.m_root);
+	auto [root2, path] = player.loadTreeFromFile(filename);
+	player.m_root = root2;
+	const char* filename2 = "C:\\MyData\\Projects\\gra_w_pana\\logs\\test_tree_dump_2.gv";
+	player.dumpTree(filename2, player.m_root);
+	boost::filesystem::remove(filename);
+	boost::filesystem::remove(filename2);
 }
 BOOST_AUTO_TEST_SUITE_END();

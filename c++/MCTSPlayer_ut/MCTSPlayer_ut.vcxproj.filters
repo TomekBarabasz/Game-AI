@@ -18,7 +18,7 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\utils\test_game_rules.h">
+    <ClInclude Include="..\common\utils\mcts_player_ut_common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -33,6 +33,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MCTSPlayer_gwp_ut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MCTSPlayer_iig_ut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

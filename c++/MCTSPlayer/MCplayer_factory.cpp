@@ -3,6 +3,7 @@
 #include <boost/dll/alias.hpp> // for BOOST_DLL_ALIAS  
 #include <Trace.h>
 
+using namespace Trace;
 namespace MCRL {
 	IGamePlayer* createMCRLPlayer(int player_number, const PlayerConfig_t& pc);
 };
@@ -55,7 +56,7 @@ namespace MC
 		cfg.gameTreeFilename = pc.get_optional<string>("game_tree_filename").get_value_or("");
 		cfg.outDir = pc.get_optional<string>("out_dir").get_value_or("");
 		cfg.ExpandFromLastPermanentNode = pc.get_optional<int>("expand_from_last_permanent_node").get_value_or(0) == 1;
-		auto logger = ITrace::createInstance(pc.get_optional<string>("trace").get_value_or(""), cfg.outDir);
+		auto logger = createInstance(pc.get_optional<string>("trace").get_value_or(""), cfg.outDir);
 		auto move_limit = createMoveLimit(pc);
 		return new Player(cfg, move_limit, logger);
 	}
