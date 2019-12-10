@@ -161,7 +161,6 @@
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="MinMaxABPlayer.cpp" />
-    <ClCompile Include="MinMaxPlayer_common.cpp" />
     <ClCompile Include="MinMaxPlayer_factory.cpp" />
     <ClCompile Include="MinMaxPlayer_iterative_deepening.cpp" />
     <ClCompile Include="MinMaxPlayer_multi.cpp" />

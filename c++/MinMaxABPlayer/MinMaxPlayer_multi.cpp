@@ -13,6 +13,7 @@ struct MinMaxABPlayer_mp : IGamePlayer
 	const int		m_player_number;
 	const int		m_number_of_players;
 	const int		max_depth;
+	const string m_evalFcn_name;
 	EvalFunction_t	m_eval_function;
 	IGameRules*		m_game_rules;
 	Histogram<float> m_move_select_time;
@@ -23,15 +24,18 @@ struct MinMaxABPlayer_mp : IGamePlayer
 		std::array<int, 4> value;
 	};
 
-	MinMaxABPlayer_mp(int pn, int np, int maxDepth, EvalFunction_t evalFcn) :
+	MinMaxABPlayer_mp(int pn, int np, int maxDepth, const string& evalFcn) :
 		m_player_number(pn),
 		m_number_of_players(np),
 		max_depth(maxDepth),
-		m_eval_function(evalFcn)
+		m_evalFcn_name(evalFcn)
 	{}
 	void	release() override { delete this; }
-	void	setGameRules(IGameRules* gr) override { m_game_rules = gr; }
-	void	setEvalFunction(EvalFunction_t ef) override { m_eval_function = ef; }
+	void	setGameRules(IGameRules* gr) override
+	{
+		m_game_rules = gr;
+		m_eval_function = gr->CreateEvalFunction(m_evalFcn_name);
+	}
 	NamedMetrics_t	getGameStats() override
 	{
 		NamedMetrics_t nm;
@@ -62,7 +66,7 @@ struct MinMaxABPlayer_mp : IGamePlayer
 		if (depth >= max_depth)
 		{
 			Action a{ nullptr };
-			m_eval_function(pks, a.value.data(), m_number_of_players);
+			m_eval_function(pks, a.value.data());
 			return a;
 		}
 
@@ -94,7 +98,7 @@ struct MinMaxABPlayer_mp : IGamePlayer
 	}
 };
 
-IGamePlayer* createMinMaxPlayer_mp(int pn, int numPlayers, int depth, EvalFunction_t evalFcn)
+IGamePlayer* createMinMaxPlayer_mp(int pn, int numPlayers, int depth, const string& evalFcn)
 {
 	return new MinMaxABPlayer_mp(pn, numPlayers, depth, evalFcn);
 }

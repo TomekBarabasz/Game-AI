@@ -59,17 +59,25 @@ struct TestGameRules: IGameRules
 	{
 		throw "not implemented";
 	}
-	void UpdatePlayerKnownState(GameState* playerKnownState, const GameState* completeGameState, const std::vector<MoveList*>& playerMoves, int playerNum) override
+	EvalFunction_t CreateEvalFunction(const string& name)
+	{
+		throw "not implemented";
+	}
+	void UpdatePlayerKnownState(GameState* playerKnownState, const GameState* completeGameState, const std::vector<MoveList*>& playerMoves) override
 	{
 		throw "not implemented";
 	}
 
 	GameState*	CreateStateFromString(const wstring& sstr) override
 	{
-		auto it = std::find_if(m_tree.begin(), m_tree.end(), [&](const GameState& gs){
+		auto it = std::find_if(m_tree.begin(), m_tree.end(), [&](const GameState& gs) {
 			return gs.name == sstr;
-		});
+			});
 		return &*it;
+	}
+	GameState* CreateStateFromString(const string& sstr) override
+	{
+		throw "not implemented";
 	}
 	GameState* CopyGameState(const GameState*) override
 	{

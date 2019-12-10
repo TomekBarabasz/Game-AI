@@ -41,8 +41,5 @@
     <ClCompile Include="MinMaxPlayer_multi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MinMaxPlayer_common.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

@@ -18,22 +18,26 @@ struct MinMaxABPlayer_iterativeDeepening : IGamePlayer
 
 	const int	m_player_number;
 	const float m_time_limit;
+	const string m_evalFcn_name;
 	EvalFunction_t m_eval_function;
 	IGameRules* m_game_rules;
 	Histogram<float> m_move_select_time;
 
-	MinMaxABPlayer_iterativeDeepening(int pn, float time_limit, EvalFunction_t evalFcn) :
+	MinMaxABPlayer_iterativeDeepening(int pn, float time_limit, const string& evalFcn) :
 		m_player_number(pn),
 		m_time_limit(time_limit),
-		m_eval_function(evalFcn)
+		m_evalFcn_name(evalFcn)
 	{
 		m_move_select_time.Rounding(2).Prefix('m');
 	}
 	void	release() override { delete this; }
 	void	startNewGame(GameState*) override {}
 	void	endGame(int score, GameResult result) override {}
-	void	setGameRules(IGameRules* gr) override { m_game_rules = gr; }
-	void	setEvalFunction(EvalFunction_t ef) override { m_eval_function = ef; }
+	void	setGameRules(IGameRules* gr) override
+	{
+		m_game_rules = gr;
+		m_eval_function = gr->CreateEvalFunction(m_evalFcn_name);
+	}
 	NamedMetrics_t	getGameStats() override
 	{
 		NamedMetrics_t nm;
@@ -112,7 +116,7 @@ struct MinMaxABPlayer_iterativeDeepening : IGamePlayer
 	}
 };
 
-IGamePlayer* createMinMaxABPlayer_iterativeDeepening(int pn, float time_limit, EvalFunction_t evalFcn)
+IGamePlayer* createMinMaxABPlayer_iterativeDeepening(int pn, float time_limit, const string& evalFcn)
 {
 	return new MinMaxABPlayer_iterativeDeepening(pn, time_limit, evalFcn);
 }

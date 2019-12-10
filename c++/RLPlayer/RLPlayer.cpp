@@ -25,8 +25,6 @@ namespace RL
 			m_game_rules = gr;
 			gr->AddRef();
 		}
-		void setEvalFunction(EvalFunction_t) override
-		{}
 		MoveList* selectMove(GameState* pks) override
 		{
 			auto *moves = m_game_rules->GetPlayerLegalMoves(pks, m_player_number);

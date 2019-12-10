@@ -3,6 +3,7 @@
 #include <random>
 #include <set>
 #include "GamePlayer.h"
+#include "GameRules.h"
 #include "object_pool_multisize.h"
 #include <boost/bimap.hpp>
 #include "Trace.h"
@@ -28,6 +29,8 @@ namespace MC
 		string		traceMoveFilename;
 		string		gameTreeFilename;
 		float		BestMoveValueEps = 0.005f;
+		float		WeightedBackprop;
+		string		EvalFcn;
 	};
 	struct IMoveLimit
 	{
@@ -126,6 +129,7 @@ namespace MC
 		Histogram<long>	m_nodePool_usage;
 		Histogram<long> m_num_runs_per_move;
 		Histogram<string>	m_find_root_node_result;
+		Histogram<long> m_simulation_end_node;
 		const bool		m_release_nodes_during_find;
 		using StatesBimap = boost::bimap<boost::bimaps::set_of<string>, boost::bimaps::set_of<StateNode*>>;
 		StatesBimap		m_states_in_game_tree;
@@ -135,10 +139,9 @@ namespace MC
 		~Player();
 		void	seed(unsigned long seed) { m_generator.seed(seed); }
 		void	release() override { delete this; }
-		void	startNewGame(GameState*) override { m_move_nbr = 1; }
+		void	startNewGame(GameState*) override;
 		void	endGame(int score, GameResult result) override;
-		void	setGameRules(IGameRules* gr)       override { m_game_rules = gr; }
-		void	setEvalFunction(EvalFunction_t ef) override { m_eval_function = ef; }
+		void setGameRules(IGameRules* gr) override;
 		NamedMetrics_t	getGameStats() override;
 		void	resetStats() override {}
 		std::string getName() override { return "mcts"; }

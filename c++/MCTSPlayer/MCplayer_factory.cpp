@@ -4,6 +4,7 @@
 #include <Trace.h>
 
 using namespace Trace;
+EvalFunction_t createEvalFunction(const char*);
 namespace MCRL {
 	IGamePlayer* createMCRLPlayer(int player_number, const PlayerConfig_t& pc);
 };
@@ -56,6 +57,8 @@ namespace MC
 		cfg.gameTreeFilename = pc.get_optional<string>("game_tree_filename").get_value_or("");
 		cfg.outDir = pc.get_optional<string>("out_dir").get_value_or("");
 		cfg.ExpandFromLastPermanentNode = pc.get_optional<int>("expand_from_last_permanent_node").get_value_or(0) == 1;
+		cfg.WeightedBackprop = pc.get_optional<float>("weighted_backprop").get_value_or(0);
+		cfg.EvalFcn = pc.get_optional<std::string>("eval_function").get_value_or("");
 		auto logger = createInstance(pc.get_optional<string>("trace").get_value_or(""), cfg.outDir);
 		auto move_limit = createMoveLimit(pc);
 		return new Player(cfg, move_limit, logger);

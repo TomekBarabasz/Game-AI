@@ -159,8 +159,10 @@ namespace GraWZombiaki
 		GameState* CreateRandomInitialState(IRandomGenerator*) override;
 		GameState* CreateInitialStateFromHash(const uint32_t*) override;
 		GameState* CreateStateFromString(const wstring&) override;
+		GameState* CreateStateFromString(const string&) override;
 		GameState* CreatePlayerKnownState(const GameState*, int playerNum) override;
-		void		UpdatePlayerKnownState(GameState* playerKnownState, const GameState* completeGameState, const std::vector<MoveList*>& playerMoves, int playerNum) override;
+		EvalFunction_t CreateEvalFunction(const string& name) override;
+		void		UpdatePlayerKnownState(GameState* playerKnownState, const GameState* completeGameState, const std::vector<MoveList*>& playerMoves) override;
 		GameState* CopyGameState(const GameState*) override;
 		void copyGameState(const GameState * src, GameState * dst);
 		bool AreEqual(const GameState*, const GameState*) override;

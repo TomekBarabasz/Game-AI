@@ -10,14 +10,17 @@ struct IRandomGenerator;
 struct GameState;
 struct Move;
 struct MoveList;
+using EvalFunction_t = std::function<void(const GameState*, int score[])>;
 struct IGameRules
 {
 	virtual void		SetRandomGenerator			(IRandomGenerator*) = 0;
 	virtual GameState*	CreateRandomInitialState	(IRandomGenerator*) = 0;
 	virtual GameState*	CreateInitialStateFromHash	(const uint32_t*) = 0;
 	virtual GameState*	CreateStateFromString		(const wstring&) = 0;
+	virtual GameState*	CreateStateFromString		(const string&) = 0;
 	virtual GameState*	CreatePlayerKnownState		(const GameState*, int playerNum) = 0;
-	virtual void		UpdatePlayerKnownState		(GameState* playerKnownState, const GameState* completeGameState, const std::vector<MoveList*>& playerMoves, int playerNum) = 0;
+	virtual EvalFunction_t CreateEvalFunction(const string& name) = 0;
+	virtual void		UpdatePlayerKnownState		(GameState* playerKnownState, const GameState* completeGameState, const std::vector<MoveList*>& playerMoves) = 0;
 	virtual GameState*	CopyGameState				(const GameState*) = 0;
 	virtual bool		AreEqual					(const GameState*, const GameState*) = 0;
 	virtual void		ReleaseGameState			(GameState*) = 0;

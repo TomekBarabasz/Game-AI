@@ -135,8 +135,6 @@ namespace MCRL
 			gr->AddRef();
 			StateNode::HashSize = m_game_rules->GetStateHashSize();
 		}
-		void setEvalFunction(EvalFunction_t) override
-		{}
 
 		MoveList*	selectMove(GameState* pks) override
 		{

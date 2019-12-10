@@ -164,7 +164,9 @@
     <ClCompile Include="..\common\utils\Trace.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="MCRLplayer.cpp" />
-    <ClCompile Include="MCTSPlayer_diagnostics.cpp" />
+    <ClCompile Include="MCTSPlayer_diagnostics.cpp">
+      <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ShowIncludes>
+    </ClCompile>
     <ClCompile Include="MCTSPlayer.cpp" />
     <ClCompile Include="MCplayer_factory.cpp" />
     <ClCompile Include="pch_mcts.cpp">

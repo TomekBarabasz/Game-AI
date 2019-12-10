@@ -84,11 +84,11 @@ BOOST_AUTO_TEST_CASE(expvalue_graph_type1, *ut::tolerance(0.001))
 	auto r = makeGameTree_type1({{100,0.3f},{100,0.7f},{100,0.5f}});
 	auto root = r.CreateRandomInitialState(nullptr);
 	//NOTE: whole graph explored only with explore-exploit ratio = 1.0! 
-	MC::MCTSConfig	cfg{ 0,2,1,false, 10,1.0,1234,-50,"c:\\MyData\\Projects\\gra_w_pana\\logs","","" };
+	MC::MCTSConfig	cfg{ 0,2,1,false, 10,1.5,1234,-50,"c:\\MyData\\Projects\\gra_w_pana\\logs","","" };
 	MC::Player player(cfg, new TestSimLimit(10), createInstance(""));
 	player.setGameRules(&r);
 
-	auto [move, p] = player.runNSimulations(root, 10);
+	auto [move, p] = player.runNSimulations(root, 15);
 	BOOST_TEST(L"center" == r.ToWString(move));
 }
 
