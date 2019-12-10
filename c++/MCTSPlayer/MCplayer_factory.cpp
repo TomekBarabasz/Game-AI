@@ -50,7 +50,7 @@ namespace MC
 		cfg.PlayerNumber = player_number;
 		cfg.seed = pc.get_optional<unsigned long>("random_seed").get_value_or(unsigned(CLK::now().time_since_epoch().count()));
 		cfg.NumberOfPlayers = pc.get_optional<int>("number_of_players").get_value_or(2);
-		cfg.MaxPlayoutDepth = pc.get_optional<int>("playout_depth").get_value_or(10);
+		cfg.MaxPlayoutDepth = pc.get_optional<int>("playout_depth").get_value_or(20);
 		cfg.NodesToAppendDuringExpansion = pc.get_optional<int>("expand_size").get_value_or(1);
 		cfg.EERatio = pc.get_optional<float>("explore_exploit_ratio").get_value_or(1.0);
 		cfg.traceMoveFilename = pc.get_optional<string>("trace_move_filename").get_value_or("");
@@ -59,6 +59,9 @@ namespace MC
 		cfg.ExpandFromLastPermanentNode = pc.get_optional<int>("expand_from_last_permanent_node").get_value_or(0) == 1;
 		cfg.WeightedBackprop = pc.get_optional<float>("weighted_backprop").get_value_or(0);
 		cfg.EvalFcn = pc.get_optional<std::string>("eval_function").get_value_or("");
+		cfg.BestMoveValueEps = pc.get_optional<float>("best_move_value_eps").get_value_or(0.005f);
+		cfg.CycleScore = pc.get_optional<int>("cycle_score").get_value_or(50);
+		
 		auto logger = createInstance(pc.get_optional<string>("trace").get_value_or(""), cfg.outDir);
 		auto move_limit = createMoveLimit(pc);
 		return new Player(cfg, move_limit, logger);

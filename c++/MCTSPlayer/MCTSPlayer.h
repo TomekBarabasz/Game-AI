@@ -21,14 +21,14 @@ namespace MC
 		int			NumberOfPlayers;
 		int			NodesToAppendDuringExpansion = 1;
 		bool		ExpandFromLastPermanentNode;
-		int			MaxPlayoutDepth = 20;
+		int			MaxPlayoutDepth;
 		float		EERatio;
 		unsigned	seed;
-		int			CyclePenalty = 50;
+		int			CycleScore = 50;
 		string		outDir;
 		string		traceMoveFilename;
 		string		gameTreeFilename;
-		float		BestMoveValueEps = 0.005f;
+		float		BestMoveValueEps;
 		float		WeightedBackprop;
 		string		EvalFcn;
 	};

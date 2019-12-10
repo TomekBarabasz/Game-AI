@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
-  <game num_games="10" start_state="S=|P0=9.3h10.3cW.3sD.3hK.3cA.3c|P1=9.3c10.3hW.3hD.3sK.3hA.3h|P2=9.3s10.3sW.3cD.3dK.3dA.3d|CP=0" round_limit="100" num_threads="1" provider="GraWPanaZasadyV2" verbose="game.log" save="results.xml" out_dir="c:\MyData\Projects\gra_w_pana\logs" sync_player="2" />
+  <game num_games="10" _start_state="S=|P0=9.3h10.3cW.3sD.3hK.3cA.3c|P1=9.3c10.3hW.3hD.3sK.3hA.3h|P2=9.3s10.3sW.3cD.3dK.3dA.3d|CP=0" round_limit="100" num_threads="1" provider="GraWPanaZasadyV2" _verbose="game.log" save="results.xml" out_dir="c:\MyData\Projects\gra_w_pana\logs" sync_player="2" />
   <players>
     <player name="ab11ncw" provider="minmaxabplayer" search_depth="11" _move_time_limit="1" eval_function="num_cards_weighted" />
     <player name="ab11nco" provider="minmaxabplayer" search_depth="11" _move_time_limit="1" eval_function="num_cards" />
-    <player name="mcts" provider="mctsplayer" explore_exploit_ratio="0.01" playout_depth="100" expand_size="3" expand_from_last_permanent_node="1" _move_sim_limit="50" move_time_limit="1" _trace_move_filename="mcts_move_tree" _game_tree_filename="mcts_game_tree" trace="mcts.log" weighted_backprop="1" eval_function="num_cards_weighted" out_dir="c:\MyData\Projects\gra_w_pana\dbg_logs" type="mcts" />
+    <player name="mcts_p" provider="mctsplayer" explore_exploit_ratio="0.01" playout_depth="50" expand_size="3" expand_from_last_permanent_node="1" _move_sim_limit="50" move_time_limit="1" _trace_move_filename="mcts_move_tree" _game_tree_filename="mcts_game_tree" trace="mcts.log" weighted_backprop="1" eval_function="num_cards_weighted" best_move_value_eps="0.00001" cycle_score="50" out_dir="c:\MyData\Projects\gra_w_pana\dbg_logs" type="mcts" />
+    <player name="mcts" provider="mctsplayer" explore_exploit_ratio="0.1" playout_depth="50" expand_size="3" expand_from_last_permanent_node="1" _move_sim_limit="50" move_time_limit="1" _trace_move_filename="mcts_move_tree" _game_tree_filename="mcts_game_tree" trace="mcts.log" weighted_backprop="0" eval_function="num_cards_weighted" best_move_value_eps="0.05" cycle_score="50" out_dir="c:\MyData\Projects\gra_w_pana\dbg_logs" type="mcts"></player>
     <player name="mcrl" provider="mctsplayer" type="mcrl" explore_exploit_ratio="1.5" out_dir="c:\MyData\Projects\gra_w_pana\dbg_logs" policy_filename="c:\MyData\Projects\gra_w_pana\logs\gra_w_pana_policy.txt" />
     <player name="lowcard" type="lowcard" provider="SimpleStrategyPlayer" />
     <player name="random" provider="SimpleStrategyPlayer" type="random" />

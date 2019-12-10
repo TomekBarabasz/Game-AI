@@ -134,7 +134,8 @@ BOOST_AUTO_TEST_CASE(play_3x9)
 	s.is_terminal = false;
 	s.current_player = 0;
 	s.stack =   mkmb({00,00,00,00,00,00,11});
-	s.hand[0] = mkmb({00,00,00,11,11,11,00});
+	s.hand[0].cards = mkmb({00,00,00,11,11,11,00});
+	s.hand[0].count = 3;
 	s.is_terminal = gr.checkIfTerminal(&s);
 
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
@@ -142,9 +143,12 @@ BOOST_AUTO_TEST_CASE(play_3x9)
 	auto [mv1, p1] = gr.GetMoveFromList(ml, 0);
 	BOOST_TEST_EQ_UINT64_t(mv1->operation , Move::play_cards);
 	BOOST_TEST_EQ_UINT64_t(mv1->cards , mkmb({11,11,11,00}));
+	BOOST_TEST_EQ_UINT64_t(mv1->count, 3);
+	
 	auto [mv2, p2] = gr.GetMoveFromList(ml, 1);
 	BOOST_TEST_EQ_UINT64_t(mv2->operation , Move::play_cards);
 	BOOST_TEST_EQ_UINT64_t(mv2->cards , mkmb({00,00,11,00}));
+	BOOST_TEST_EQ_UINT64_t(mv2->count, 1);
 	gr.ReleaseMoveList(ml);
 }
 BOOST_AUTO_TEST_CASE(play_1_card_lower)
@@ -152,7 +156,8 @@ BOOST_AUTO_TEST_CASE(play_1_card_lower)
 	GameState s;
 	s.current_player = 0;
 	s.stack = mkmb({00,00,00,11});
-	s.hand[0] = mkmb({ 00,11,00,11,00,00,00,00 });
+	s.hand[0].cards = mkmb({ 00,11,00,11,00,00,00,00 });
+	s.hand[0].count = 2;
 	s.is_terminal = gr.checkIfTerminal(&s);
 
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
@@ -160,6 +165,7 @@ BOOST_AUTO_TEST_CASE(play_1_card_lower)
 	auto [mv, p] = gr.GetMoveFromList(ml, 0);
 	BOOST_TEST_EQ_UINT64_t(mv->operation , Move::play_cards);
 	BOOST_TEST_EQ_UINT64_t(mv->cards, mkmb({ 00,00,00,11,00,00,00,00 }));
+	BOOST_TEST_EQ_UINT64_t(mv->count, 1);
 	gr.ReleaseMoveList(ml);
 }
 BOOST_AUTO_TEST_CASE(play_quad)
@@ -167,7 +173,8 @@ BOOST_AUTO_TEST_CASE(play_quad)
 	GameState s;
 	s.current_player = 0;
 	s.stack = mkmb({00,00,00,11});
-	s.hand[0] = mkmb({11,11,11,11,00,00,00,00});
+	s.hand[0].cards = mkmb({11,11,11,11,00,00,00,00});
+	s.hand[0].count = 4;
 	s.is_terminal = gr.checkIfTerminal(&s);
 
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
@@ -175,10 +182,12 @@ BOOST_AUTO_TEST_CASE(play_quad)
 	auto [mv1, p1] = gr.GetMoveFromList(ml, 0);
 	BOOST_TEST_EQ_UINT64_t(mv1->operation , Move::play_cards);
 	BOOST_TEST_EQ_UINT64_t(mv1->cards , mkmb({ 00,00,00,11,00,00,00,00 }));
-
+	BOOST_TEST_EQ_UINT64_t(mv1->count, 1);
+	
 	auto [mv2, p2] = gr.GetMoveFromList(ml, 1);
 	BOOST_TEST_EQ_UINT64_t(mv2->operation , Move::play_cards);
 	BOOST_TEST_EQ_UINT64_t(mv2->cards , mkmb({ 11,11,11,11,00,00,00,00 }));
+	BOOST_TEST_EQ_UINT64_t(mv2->count, 4);
 	gr.ReleaseMoveList(ml);
 }
 BOOST_AUTO_TEST_CASE(take_1_card)
@@ -186,7 +195,8 @@ BOOST_AUTO_TEST_CASE(take_1_card)
 	GameState s;
 	s.current_player = 0;
 	s.stack = mkmb({00,00,00,11,00,00,00,11});
-	s.hand[0] = mkmb({11,00,00,00});
+	s.hand[0].cards = mkmb({11,00,00,00});
+	s.hand[0].count = 1;
 	s.is_terminal = gr.checkIfTerminal(&s);
 
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
@@ -194,6 +204,7 @@ BOOST_AUTO_TEST_CASE(take_1_card)
 	auto [mv, p] = gr.GetMoveFromList(ml, 0);
 	BOOST_TEST_EQ_UINT64_t(mv->operation , Move::take_cards);
 	BOOST_TEST_EQ_UINT64_t(mv->cards , mkmb({ 00,00,00,11,00,00,00,00 }));
+	BOOST_TEST_EQ_UINT64_t(mv->count, 1);
 	BOOST_TEST(p == 1.0);
 	gr.ReleaseMoveList(ml);
 }
@@ -205,7 +216,7 @@ BOOST_AUTO_TEST_CASE(take_2_cards)
 	s.stack = mkmb({00,00,00,11, 00,00,11,00, 00,00,00,11});
 
 	BOOST_TEST_EQ_UINT64_t(s.stack , GraWPanaGameRules::handFromString(L"W.3♥10.3♠9.3♥"));
-	s.hand[0] = mkmb({00,00,11,00});
+	s.hand[0].cards = mkmb({00,00,11,00});
 	s.is_terminal = gr.checkIfTerminal(&s);
 
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
@@ -213,6 +224,7 @@ BOOST_AUTO_TEST_CASE(take_2_cards)
 	auto [mv, p] = gr.GetMoveFromList(ml, 0);
 	BOOST_TEST_EQ_UINT64_t(mv->operation , Move::take_cards);
 	BOOST_TEST_EQ_UINT64_t(mv->cards , mkmb({ 00,00,00,11, 00,00,11,00, 00,00,00,00 }));
+	BOOST_TEST_EQ_UINT64_t(mv->count, 2);
 	BOOST_TEST(p == 1.0);
 	gr.ReleaseMoveList(ml);
 }
@@ -221,7 +233,7 @@ BOOST_AUTO_TEST_CASE(take_3_cards)
 	GameState s;
 	s.current_player = 0;
 	s.stack = mkmb({ 00,11,00,11, 00,11,00,11, 00,00,00,11 });
-	s.hand[0] = mkmb({00,00,11,00});
+	s.hand[0].cards = mkmb({00,00,11,00});
 	s.is_terminal = gr.checkIfTerminal(&s);
 
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
@@ -229,6 +241,7 @@ BOOST_AUTO_TEST_CASE(take_3_cards)
 	auto [mv, p] = gr.GetMoveFromList(ml, 0);
 	BOOST_TEST_EQ_UINT64_t(mv->operation , Move::take_cards);
 	BOOST_TEST_EQ_UINT64_t(mv->cards , mkmb({ 00,11,00,11, 00,11,00,00, 00,00,00,00 }));
+	BOOST_TEST_EQ_UINT64_t(mv->count, 3);
 	BOOST_TEST(p == 1.0);
 	gr.ReleaseMoveList(ml);
 }
@@ -237,7 +250,8 @@ BOOST_AUTO_TEST_CASE(play_cards_or_take_cards)
 	GameState s;
 	s.current_player = 0;
 	s.stack = mkmb({00,00,00,11, 00,11,00,11, 00,00,00,11});
-	s.hand[0] = mkmb({00,00,11,00, 00,00,00,00, 00,00,11,00});
+	s.hand[0].cards = mkmb({00,00,11,00, 00,00,00,00, 00,00,11,00});
+	s.hand[0].count = 2;
 	s.is_terminal = gr.checkIfTerminal(&s);
 
 	MoveList *ml = gr.GetPlayerLegalMoves(&s, 0);
@@ -245,9 +259,12 @@ BOOST_AUTO_TEST_CASE(play_cards_or_take_cards)
 	auto [mv1, p1] = gr.GetMoveFromList(ml, 0);
 	BOOST_TEST_EQ_UINT64_t(mv1->operation , Move::play_cards);
 	BOOST_TEST_EQ_UINT64_t(mv1->cards , mkmb({ 00,00,11,00, 00,00,00,00, 00,00,00,00 }));
+	BOOST_TEST_EQ_UINT64_t(mv1->count, 1);
+	
 	auto [mv2, p2] = gr.GetMoveFromList(ml, 1);
 	BOOST_TEST_EQ_UINT64_t(mv2->operation , Move::take_cards);
 	BOOST_TEST_EQ_UINT64_t(mv2->cards , mkmb({ 00,00,00,11, 00,11,00,11, 00,00,00,00 }));
+	BOOST_TEST_EQ_UINT64_t(mv2->count, 3);
 	gr.ReleaseMoveList(ml);
 }
 BOOST_AUTO_TEST_CASE(play_cards_or_take_cards_iig)
@@ -255,7 +272,8 @@ BOOST_AUTO_TEST_CASE(play_cards_or_take_cards_iig)
 	GameState s;
 	s.current_player = 0;
 	s.stack = mkmb({ 00,00,00,11, 00,11,00,11, 00,00,00,11 });
-	s.hand[0] = mkmb({ 00,00,10,00, 00,00,00,00, 00,00,01,00 });
+	s.hand[0].cards = mkmb({ 00,00,10,00, 00,00,00,00, 00,00,01,00 });
+	s.hand[0].count = 2;
 	s.is_terminal = gr.checkIfTerminal(&s);
 
 	MoveList* ml = gr.GetPlayerLegalMoves(&s, 0);
@@ -263,11 +281,13 @@ BOOST_AUTO_TEST_CASE(play_cards_or_take_cards_iig)
 	auto [mv1, p1] = gr.GetMoveFromList(ml, 0);
 	BOOST_TEST_EQ_UINT64_t(mv1->operation, Move::play_cards);
 	BOOST_TEST_EQ_UINT64_t(mv1->cards, mkmb({ 00,00,11,00, 00,00,00,00, 00,00,00,00 }));
+	BOOST_TEST_EQ_UINT64_t(mv1->count, 1);
 	BOOST_TEST(p1 == 0.5f);
 	
 	auto [mv2, p2] = gr.GetMoveFromList(ml, 1);
 	BOOST_TEST_EQ_UINT64_t(mv2->operation, Move::take_cards);
 	BOOST_TEST_EQ_UINT64_t(mv2->cards, mkmb({ 00,00,00,11, 00,11,00,11, 00,00,00,00 }));
+	BOOST_TEST_EQ_UINT64_t(mv2->count, 3);
 	BOOST_TEST(p2 == 1.0);
 	gr.ReleaseMoveList(ml);
 }
@@ -276,7 +296,8 @@ BOOST_AUTO_TEST_CASE(play_1_card_iig)
 	GameState s;
 	s.current_player = 0;
 	s.stack = mkmb({ 00,00,00,11 });
-	s.hand[0] = mkmb({ 10,00,00,00, 00,00,00,01, 00,00,00,00 });
+	s.hand[0].cards = mkmb({ 10,00,00,00, 00,00,00,01, 00,00,00,00 });
+	s.hand[0].count = 2;
 	s.is_terminal = gr.checkIfTerminal(&s);
 
 	MoveList* ml = gr.GetPlayerLegalMoves(&s, 0);
@@ -284,11 +305,13 @@ BOOST_AUTO_TEST_CASE(play_1_card_iig)
 	auto [mv, p] = gr.GetMoveFromList(ml, 0);
 	BOOST_TEST_EQ_UINT64_t(mv->operation, Move::play_cards);
 	BOOST_TEST_EQ_UINT64_t(mv->cards, mkmb({ 00,00,00,00, 00,00,00,11, 00,00,00,00 }));
+	BOOST_TEST_EQ_UINT64_t(mv->count, 1);
 	BOOST_TEST(p == 1.0f/3.0f);
 	
 	auto [mv1, p1] = gr.GetMoveFromList(ml, 1);
 	BOOST_TEST_EQ_UINT64_t(mv1->operation, Move::play_cards);
 	BOOST_TEST_EQ_UINT64_t(mv1->cards, mkmb({ 11,00,00,00, 00,00,00,00, 00,00,00,00 }));
+	BOOST_TEST_EQ_UINT64_t(mv1->count, 1);
 	BOOST_TEST(p1 == 0.5f);
 	gr.ReleaseMoveList(ml);
 }
@@ -297,7 +320,8 @@ BOOST_AUTO_TEST_CASE(play_quad_iig)
 	GameState s;
 	s.current_player = 0;
 	s.stack = mkmb({ 00,00,00,11 });
-	s.hand[0] = mkmb({ 11,10,01,10,00,00,00,00 });
+	s.hand[0].cards = mkmb({ 11,10,01,10,00,00,00,00 });
+	s.hand[0].count = 4;
 	s.is_terminal = gr.checkIfTerminal(&s);
 
 	MoveList* ml = gr.GetPlayerLegalMoves(&s, 0);
@@ -305,11 +329,13 @@ BOOST_AUTO_TEST_CASE(play_quad_iig)
 	auto [mv1, p1] = gr.GetMoveFromList(ml, 0);
 	BOOST_TEST_EQ_UINT64_t(mv1->operation, Move::play_cards);
 	BOOST_TEST_EQ_UINT64_t(mv1->cards, mkmb({ 00,00,00,11,00,00,00,00 }));
+	BOOST_TEST_EQ_UINT64_t(mv1->count, 1);
 	BOOST_TEST(p1 == 0.5f);
 	
 	auto [mv2, p2] = gr.GetMoveFromList(ml, 1);
 	BOOST_TEST_EQ_UINT64_t(mv2->operation, Move::play_cards);
 	BOOST_TEST_EQ_UINT64_t(mv2->cards, mkmb({ 11,11,11,11,00,00,00,00 }));
+	BOOST_TEST_EQ_UINT64_t(mv2->count, 4);
 	BOOST_TEST(p2 == 1.0f/3.0f);
 	gr.ReleaseMoveList(ml);
 }
@@ -319,8 +345,10 @@ BOOST_AUTO_TEST_CASE(is_terminal_1)
 	GameState s;
 	s.current_player = 0;
 	s.stack = GraWPanaGameRules::handFromString(L"10.2♥9.2♦9.3♣9.1♥");	//mkmb({00,01,01,01,00,01});
-	s.hand[0] = GraWPanaGameRules::handFromString(L"10.1♥9.2♥");			//mkmb({00,10,00,00,00,10});
-	s.hand[1] = 0;
+	s.hand[0].cards = GraWPanaGameRules::handFromString(L"10.1♥9.2♥");	//mkmb({00,10,00,00,00,10});
+	s.hand[0].count = 2;
+	s.hand[1].cards = 0;
+	s.hand[1].count = 0;
 	s.is_terminal = gr.checkIfTerminal(&s);
 	BOOST_TEST(true == gr.IsTerminal(&s));
 }
@@ -329,8 +357,10 @@ BOOST_AUTO_TEST_CASE(is_terminal_2)
 	GameState s;
 	s.current_player = 1;
 	s.stack = mkmb({ 00,01,01,01,00,01 });
-	s.hand[1] = mkmb({ 00,10,00,00,00,10 });
-	s.hand[0] = 0;
+	s.hand[1].cards = mkmb({ 00,10,00,00,00,10 });
+	s.hand[1].count = 2;
+	s.hand[0].cards = 0;
+	s.hand[0].count = 0;
 	s.is_terminal = gr.checkIfTerminal(&s);
 	BOOST_TEST(true == gr.IsTerminal(&s));
 }
@@ -339,11 +369,14 @@ BOOST_FIXTURE_TEST_SUITE(CreateStateFromString, CreateGameRules);
 BOOST_AUTO_TEST_CASE(from_wstring_1)
 {
 	//SUITS ORDER ♦ ♣ ♠ ♥;
-	GameState *s = gr.CreateStateFromString(L"S=9.1♥10.2♥10.3♠W.1♥W.2♠A.3♦|P0=9.1♠10.2♣|P1=9.1♣9.2♦10.3♦W.1♣W.2♦D.3♥D.1♠D.2♣D.3♦K.1♥K.2♠K.3♣K.1♦A.2♥A.3♠A.1♣|CP=1");
+	GameState *s = gr.CreateStateFromString(L"S=9.1♥10.2♥10.3♠W.1♥W.2♠A.3♦|P0=9.1♠10.2♣|P1=9.1♣9.2♦10.3♦W.1♣W.2♦D.3♥D.1♠D.2♣D.3♦K.1♥K.2♠K.3♣K.1♦A.2♥A.3♠|CP=1");
 	BOOST_TEST(1 == gr.GetCurrentPlayer(s));
 	BOOST_TEST(mkmb({ 11,00,00,00,00,00,00,00,00,00,00,00,00,00,10,01,00,00,11,10,00,00,00,01 }) == uint64_t(s->stack));
-	BOOST_TEST(mkmb({ 00,10,00,00,00,00,01,00 }) == s->hand[0]);
-	BOOST_TEST(mkmb({ 00,01,11,10,01,11,10,01,11,10,01,11,10,01,00,00,11,00,00,00,10,01,00,00 }) == s->hand[1]);
+	BOOST_TEST(mkmb({ 00,10,00,00,00,00,01,00 }) == uint64_t(s->hand[0].cards));
+	BOOST_TEST_EQ_UINT64_t(2, s->hand[0].count);
+	
+	BOOST_TEST(mkmb({ 00,11,10,01,11,10,01,11,10,01,11,10,01,00,00,11,00,00,00,10,01,00,00 }) == uint64_t(s->hand[1].cards));
+	BOOST_TEST_EQ_UINT64_t(15, s->hand[1].count);
 	gr.ReleaseGameState(s);
 }
 BOOST_AUTO_TEST_CASE(from_wstring_2)
@@ -352,9 +385,12 @@ BOOST_AUTO_TEST_CASE(from_wstring_2)
 	GameState *s = gr.CreateStateFromString(L"S=|P0=|P1=9.1♦10.2♦W.3♦D.1♦K.2♦A.3♦|CP=0");
 	BOOST_TEST(0 == gr.GetCurrentPlayer(s));
 	BOOST_TEST(0 == uint32_t(s->stack));
-	BOOST_TEST(0 == s->hand[0]);
-	BOOST_TEST(0b110000001000000001000000110000001000000001000000 == s->hand[1]);
-	BOOST_TEST(mkmb({ 11,00,00,00,10,00,00,00,01,00,00,00,11,00,00,00,10,00,00,00,01,00,00,00 }) == s->hand[1]);
+	BOOST_TEST(0 == uint64_t(s->hand[0].cards));
+	BOOST_TEST_EQ_UINT64_t(0, s->hand[0].count);
+	
+	BOOST_TEST(0b110000001000000001000000110000001000000001000000 == uint64_t(s->hand[1].cards));
+	BOOST_TEST(mkmb({ 11,00,00,00,10,00,00,00,01,00,00,00,11,00,00,00,10,00,00,00,01,00,00,00 }) == uint64_t(s->hand[1].cards));
+	BOOST_TEST_EQ_UINT64_t(6, s->hand[1].count);
 	gr.ReleaseGameState(s);
 }
 BOOST_AUTO_TEST_SUITE_END();
