@@ -3,10 +3,37 @@ GameLauncher.exe --p1 mcts --p2 lowcard --p3 lowcard --xml ..\..\run_config.xml 
 playout_depth=50, eval_function=num_cards_weighted, weighted_backprop=0
 --------------------------------------------------------------------- 
 Run results: eer=2.5
-
+num_rounds : 3335
+exec_time : 3 min 11 s 219 ms
+num_games : 64
+game_results : round_limit:9,state_loop:1,win:54
+p1
+ pts : 2980
+ win : 0
+ lose : 1
+ name : mcts
+ find_root_node_result : found:900,not found:180
+ node_pool_usage : 0K:50,1K:12,2K:1,3K:1
+ runs_per_move : 0:879,100:217,200:31,300:10,400:2,500:3,600:1,1200:1
+ simulation_found_terminal_node : 0:52219,1:39104
+ pts_ratio : 0.466354
+ 
 --------------------------------------------------------------------- 
 Run results: eer=2.0
-
+num_rounds : 3346
+exec_time : 3 min 3 s 539 ms
+num_games : 64
+game_results : round_limit:5,state_loop:1,win:58
+p1
+ pts : 3098
+ win : 0
+ lose : 0
+ name : mcts
+ find_root_node_result : found:925,not found:190
+ node_pool_usage : 0K:50,1K:9,2K:4,3K:1
+ runs_per_move : 0:916,100:236,200:17,300:8,400:1,1100:1
+ simulation_found_terminal_node : 0:54901,1:38288
+ pts_ratio : 0.484517
 --------------------------------------------------------------------- 
 Run results: p1 = mcts depth=50 eer=1.5
 num_rounds : 3274

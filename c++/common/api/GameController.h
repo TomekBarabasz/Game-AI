@@ -25,13 +25,14 @@ enum class SingleGameResult
 
 struct IProgressBar
 {
+	virtual void set(int) = 0;
 	virtual void update(int) = 0;
 	virtual void release() = 0;
 protected:
 	virtual ~IProgressBar() {}
 };
 
-IProgressBar* createProgressBar(bool enable, int limit);
+IProgressBar* createProgressBar(bool enable, int limit, int type);
 IRandomGenerator* makeRng();
 const char* getPlayerName(int);
 void saveXmlResults(const Result_t& results, const GameConfig_t& cfg);
