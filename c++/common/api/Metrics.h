@@ -123,8 +123,12 @@ inline std::string Histogram<std::string>::val_to_string(std::string val) const 
 template <typename T>
 struct Average
 {
-	T	 m_value = T(0);
-	long m_count = 0;
+	T	 m_value;
+	long m_count;
+	
+	Average() : m_value(T(0)),m_count(0) {}
+	Average(T value) : m_value(value), m_count(1){}
+	
 	void insert(T val) { m_value == val; ++m_count; }
 	Average<T>& operator+=(const Average<T>& other)
 	{
@@ -161,6 +165,20 @@ namespace std {
 
 		return ss.str();
 	}
+}
+
+template <typename T>
+float getRatioFromHistogram(const Histogram<T>& hist, const T& num)
+{
+	size_t ctot = 0;
+	size_t cnum = 0;
+	for (auto& kv : hist.values) {
+		ctot += kv.second;
+		if (kv.first == num) {
+			cnum += kv.second;
+		}
+	}
+	return ctot > 0 ? float(cnum) / float(ctot) : 0;
 }
 
 using Duration_t = std::chrono::duration<long long, std::nano>;

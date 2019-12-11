@@ -61,6 +61,7 @@ namespace MC
 		cfg.EvalFcn = pc.get_optional<std::string>("eval_function").get_value_or("");
 		cfg.BestMoveValueEps = pc.get_optional<float>("best_move_value_eps").get_value_or(0.005f);
 		cfg.CycleScore = pc.get_optional<int>("cycle_score").get_value_or(50);
+		cfg.Name = pc.get_optional<string>("fullname").get_value_or(pc.get<string>("name"));
 		
 		auto logger = createInstance(pc.get_optional<string>("trace").get_value_or(""), cfg.outDir);
 		auto move_limit = createMoveLimit(pc);

@@ -31,6 +31,7 @@ namespace MC
 		float		BestMoveValueEps;
 		float		WeightedBackprop;
 		string		EvalFcn;
+		string		Name;
 	};
 	struct IMoveLimit
 	{
@@ -130,6 +131,7 @@ namespace MC
 		Histogram<long> m_num_runs_per_move;
 		Histogram<string>	m_find_root_node_result;
 		Histogram<long> m_simulation_end_node;
+		Histogram<long> m_best_move_is_most_visited;
 		const bool		m_release_nodes_during_find;
 		using StatesBimap = boost::bimap<boost::bimaps::set_of<string>, boost::bimaps::set_of<StateNode*>>;
 		StatesBimap		m_states_in_game_tree;
@@ -144,7 +146,7 @@ namespace MC
 		void setGameRules(IGameRules* gr) override;
 		NamedMetrics_t	getGameStats() override;
 		void	resetStats() override {}
-		std::string getName() override { return "mcts"; }
+		std::string getName() override { return m_cfg.Name; }
 		void _dumpMoveTree();
 		void _dumpGameTree();
 		MoveList* selectMove(GameState* gs) override;

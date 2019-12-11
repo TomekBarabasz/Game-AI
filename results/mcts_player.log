@@ -1,0 +1,111 @@
+experiment 001 / 10-12-2019 / changing EE ratio
+GameLauncher.exe --p1 mcts --p2 lowcard --p3 lowcard --xml ..\..\run_config.xml --ng 64 -p -t 8
+playout_depth=50, eval_function=num_cards_weighted, weighted_backprop=0
+--------------------------------------------------------------------- 
+Run results: eer=2.5
+
+--------------------------------------------------------------------- 
+Run results: eer=2.0
+
+--------------------------------------------------------------------- 
+Run results: p1 = mcts depth=50 eer=1.5
+num_rounds : 3274
+exec_time : 3 min 28 s 968 ms
+num_games : 64
+game_results : round_limit:7,win:57
+p1
+ pts : 3048
+ win : 0
+ lose : 1
+ name : mcts
+ find_root_node_result : found:910,not found:172
+ node_pool_usage : 0K:48,1K:14,2K:2
+ runs_per_move : 0:829,100:279,200:30,300:3,400:2,500:1,900:1,1200:1
+ simulation_found_terminal_node : 0:54982,1:39068
+ pts_ratio : 0.476697
+---------------------------------------------------------------------
+Run results: eer=1.0
+num_rounds : 3559
+exec_time : 3 min 29 s 171 ms
+num_games : 64
+game_results : round_limit:11,win:53
+p1
+ pts : 3030
+ win : 0
+ lose : 0
+ name : mcts
+ find_root_node_result : found:944,not found:234
+ node_pool_usage : 0K:50,1K:13,3K:1
+ runs_per_move : 0:961,100:255,200:21,300:2,400:1,600:2
+ simulation_found_terminal_node : 0:58410,1:34516
+ pts_ratio : 0.474178
+---------------------------------------------------------------------
+Run results: eer=0.5
+Run results:
+num_rounds : 3684
+exec_time : 3 min 30 s 258 ms
+num_games : 64
+game_results : round_limit:10,state_loop:1,win:53
+p1
+ pts : 3013
+ win : 0
+ lose : 0
+ name : mcts
+ find_root_node_result : found:785,not found:411
+ node_pool_usage : 0K:47,1K:15,2K:2
+ runs_per_move : 0:993,100:211,200:42,300:10,400:2,500:1,800:1
+ simulation_found_terminal_node : 0:55625,1:33823
+ pts_ratio : 0.471592
+---------------------------------------------------------------------
+Run results: eer=0.25
+num_rounds : 3214
+exec_time : 3 min 6 s 794 ms
+num_games : 64
+game_results : round_limit:4,state_loop:1,win:59
+p1
+ pts : 3065
+ win : 0
+ lose : 1
+ name : mcts
+ find_root_node_result : found:465,not found:609
+ node_pool_usage : 0K:53,1K:6,2K:5
+ runs_per_move : 0:904,100:133,200:55,300:34,400:8,500:2,700:1,1100:1
+ simulation_found_terminal_node : 0:61526,1:28047
+ pts_ratio : 0.479281
+ ---------------------------------------------------------------------
+Run results: eer=0.1
+num_rounds : 3536
+exec_time : 3 min 46 s 44 ms
+num_games : 64
+game_results : round_limit:5,state_loop:4,win:55
+p1
+ pts : 2797
+ win : 0
+ lose : 5
+ name : mcts
+ find_root_node_result : found:454,not found:754
+ node_pool_usage : 0K:64
+ runs_per_move : 0:1059,100:143,200:40,300:9,400:7,500:6,1300:3,1400:5
+ simulation_found_terminal_node : 0:77675,1:17036
+ pts_ratio : 0.437647
+
+---------------------------------------------------------------------
+
+
+
+
+Run results: p1=mcts_p depth=50 eer=0.01
+num_rounds : 3441
+exec_time : 3 min 36 s 113 ms
+num_games : 64
+game_results : round_limit:4,state_loop:3,win:57
+p1
+ pts : 2881
+ win : 0
+ lose : 4
+ name : mcts
+ find_root_node_result : found:507,not found:676
+ node_pool_usage : 0K:58,1K:6
+ runs_per_move : 0:1018,100:135,200:62,300:13,400:8,500:2,600:2,700:2,800:1,900:1,1100:1,1200:1,1500:1
+ simulation_found_terminal_node : 0:68106,1:23559
+ pts_ratio : 0.450649

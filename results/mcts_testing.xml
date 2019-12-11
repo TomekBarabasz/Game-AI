@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <plotrun>
+    <run_config>C:\MyData\Projects\gra_w_pana\results\run_config.xml</run_config>
+	<command_line>--p1 mcts --p2 mcts_copy --xml C:\MyData\Projects\gra_w_pana\results\run_config.xml --ng 96 -t 8</command_line>
+    <use>yes</use>
+    <name>Win Ratio vs Playout Depth</name>
+    <set>
+      <var>config/players/player[@name="mcts_copy]#playout_depth</var>
+      <val>50</val>
+    </set>
+	<set>
+      <var>config/game/#out_dir</var>
+      <val>c:\MyData\Projects\gra_w_pana\results</val>
+    </set>
+    <xaxis>
+      <label>Playout Depth</label>
+      <source>run_config</source>
+      <var>config/players/player[@name="mcts"]#playout_depth</var>
+      <val>10,25,50,75,100,150,200,250,300</val>
+    </xaxis>
+    <yaxis>
+      <label>Win Ratio</label>
+      <source>results_file</source>
+      <var>results/p1#pts_ratio</var>
+      <save>WinRatio_vs_PlayoutDepth</save>
+    </yaxis>
+  </plotrun>
+</root>

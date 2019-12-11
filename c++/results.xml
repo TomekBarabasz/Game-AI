@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<results num_rounds="519" exec_time="1 min 5 s 461 ms " num_games="10" game_results="state_loop:3,win:7"><p1 pts="850" win="7" lose="0" move_select_time_ms="0.000000:522" name="minmax ab depth 9" pts_ratio="0.850000"/><p2 pts="150" win="0" lose="7" name="mcts" find_root_node_result="not found:108,found:140" node_pool_usage="0:1,1:5,2:2,3:1,4:1" runs_per_move="10:42,17:1,9:79,19:1,11:13,13:6,12:8,14:3,15:1,8:39,18:1,7:44,6:15,5:3,20:1,4:1" pts_ratio="0.150000"/></results>
