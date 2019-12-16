@@ -2,7 +2,7 @@
 <root>
   <plotrun>
     <run_config>C:\MyData\Projects\gra_w_pana\results\run_config.xml</run_config>
-	<command_line>--p1 mcts --p2 mcts_copy --ng 96 -t 8</command_line>
+    <command_line>--p1 mcts --p2 mcts_copy --ng 96 -t 8</command_line>
     <use>yes</use>
     <name>Win Ratio vs Playout Depth</name>
     <set>
@@ -13,7 +13,7 @@
       <label>Playout Depth</label>
       <source>run_config</source>
       <var>players/player[@name="mcts"]#playout_depth</var>
-      <val>10,25,50,75,100,150,200,250,300</val>
+      <val>20,30,40,50,60,70</val>
     </xaxis>
     <yaxis>
       <label>Win Ratio</label>

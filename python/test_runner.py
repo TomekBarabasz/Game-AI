@@ -179,7 +179,6 @@ def runNormal(command_line, run_name, bindir) :
 	curdir = os.getcwd()
 	os.chdir( bindir )
 	print('executing : ',run_name)
-	#print('command_line',command_line)
 	proc = subprocess.Popen("GameLauncher.exe " + command_line,stdout=subprocess.PIPE)
 	pb = ProgressBar(100,prefix='progress', suffix='', decimals=0, length=50, fill='#')
 	pb.print_progress_bar( 0 )
@@ -190,7 +189,6 @@ def runNormal(command_line, run_name, bindir) :
 			pass
 	_, _ = proc.communicate() #fetch return code
 	print('... Done! return code', proc.returncode)
-	#subprocess.run("GameLauncher.exe " + command_line)
 	os.chdir( curdir )
 
 def runFake(command_line, run_name, bindir) :
