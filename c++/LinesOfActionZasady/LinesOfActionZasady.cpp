@@ -13,14 +13,43 @@
 using std::vector;
 using std::string;
 
+struct Move
+{
+	uint8_t from;
+	uint8_t to;
+
+	string toString() const 
+	{
+		std::ostringstream ss;
+		const char  start_col = 'A' + from % 8;
+		const auto start_row = from / 8 + 1;
+		const char end_col = 'A' + to % 8;
+		const auto end_row = to / 8 + 1;
+		ss << start_col << start_row << "->" << end_col << end_row;
+		return ss.str();
+	}
+};
+struct MoveList
+{
+	uint16_t size;
+	Move move[1];
+	//next moves will follow
+};
 struct GameState
 {
+	static const int Whites = 0;
+	static const int Blacks = 1;
+	
 	//BIT order: b0..b7=A1..H1 b8..b16=A2..H2 i.e. 1st byte is line 1, 2nd byte line 2, LSB is A MSB is H
 	uint64_t white;
 	uint64_t black;
 	uint64_t current_player : 1;
 	uint64_t is_terminal	: 1;
 
+	GameState() {}
+	GameState(uint64_t wh, uint64_t bl, int cp)
+		: white(wh), black(bl), current_player(cp), is_terminal(calcIfTerminal(white) || calcIfTerminal(black))
+	{}
 	static bool calcIfTerminal(uint64_t board)
 	{
 		if (__popcnt64(board) == 1) return true;
@@ -110,31 +139,134 @@ struct GameState
 		}
 		return m;
 	}
+	static void addMoveIfValid(int pos, int row, int col, uint64_t pieces, MoveList& ml)
+	{
+		if (row >=0 && row <=7 && col >=0 && col <=7)
+		{
+			const int newPos = col * 8 + row;
+			const uint64_t newPosMask = 1ull << newPos;
+			if (0 == (pieces & newPosMask))
+			{
+				auto& mv = ml.move[ml.size++];
+				mv.from = pos;
+				mv.to = newPos;
+			}
+		}
+	}
+	int getPlayerLegalMoves(MoveList& ml) const
+	{
+		uint64_t my,tmp,other;
+		if (Whites == current_player) {
+			tmp=my = white;
+			other = black;
+		}
+		else {
+			tmp=my = black;
+			other = white;
+		}
+		uint64_t all = my | other;
+		unsigned long pos;
+		while(tmp)
+		{
+			//go through all bits(pieces) of my color
+			_BitScanForward64(&pos, tmp);
+			const uint64_t curPosMask = 1ull << pos;
+			
+			const int position = static_cast<int>(pos);
+			const int col = position % 8;
+			const int row = position / 8;
+			//row
+			auto line = all & getRowMask(position) ;
+			int cnt = static_cast<int>(__popcnt64(line));
+			
+			//left
+			addMoveIfValid(position, col - cnt, row, my, ml);			
+			//right
+			addMoveIfValid(position, col + cnt, row, my, ml);
+
+			//column
+			line = all & getColumnMask(position);
+			cnt = static_cast<int>(__popcnt64(line));
+			//up
+			addMoveIfValid(position, col, row + cnt, my, ml);
+			//down
+			addMoveIfValid(position, col, row - cnt, my, ml);
+			
+			//left diagonal
+			line = all & getLeftDiagonalMask(position);
+			cnt = static_cast<int>(__popcnt64(line));
+			//up-left
+			addMoveIfValid(position, col - cnt, row + cnt, my, ml);
+			//down-right
+			addMoveIfValid(position, col + cnt, row - cnt, my, ml);
+			
+			//right diagonal
+			line = all & getRightDiagonalMask(position);
+			cnt = static_cast<int>(__popcnt64(line));
+			//up-right
+			addMoveIfValid(position, col + cnt, row + cnt, my, ml);
+			//down-left
+			addMoveIfValid(position, col - cnt, row - cnt, my, ml);
+			
+			tmp &= ~curPosMask;
+		}
+		return ml.size;
+	}
+	void applyMove(Move& mv, int playerNum)
+	{
+		const uint64_t fromMask = 1ull << mv.from;
+		const uint64_t toMask   = 1ull << mv.to;
+		uint64_t *my, *other;
+
+		if (Whites == playerNum) {
+			my = &white;
+			other = &black;
+		}
+		else {
+			my = &black ;
+			other = &white;
+		}
+		assert(*my & fromMask);
+		assert(0 == (*my & toMask));
+		*my &= ~fromMask;
+		*my |= toMask;
+		*other &= ~toMask;
+	}
+	string toString() const
+	{
+		std::ostringstream ss;
+		uint64_t mask = 0x8000000000000000ull;
+		int i = 0;
+		while(mask)
+		{
+			char c = white & mask ? 'o' : black & mask ? '*' : '.';
+			ss << c;
+			if (++i == 8) {
+				ss << std::endl;
+				i = 0;
+			}
+			mask >>= 1;
+		}
+		ss << "cp=" << current_player;
+		return ss.str();
+	}
 };
-struct Move
-{
-};
-struct MoveList
-{
-	uint64_t size;
-	Move move[1];
-	//next moves will follow
-};
+
 namespace LinesOfAction
 {
 	struct LinesOfActionGameRules : IGameRules
 	{
 		static const int NumPlayers = 2;
 		int m_RefCnt;
-		ObjectPoolBlocked<GameState, 512>  m_GameStatePool;
+		MoveList m_noop = {1,{0,0}};
+		ObjectPoolBlocked<GameState, 24>			m_GameStatePool;
+		ObjectPoolMultisize<8 * sizeof(Move), 4096> m_moveListPool;
 		
 		LinesOfActionGameRules()
-		{
-			
+		{	
 		}
 		~LinesOfActionGameRules() override
 		{
-			
 		}
 		GameState* allocGameState()
 		{
@@ -149,7 +281,11 @@ namespace LinesOfAction
 		}
 		GameState* CreateRandomInitialState(IRandomGenerator*) override
 		{
-			throw "not_implemented";
+			auto* gs = allocGameState();
+			gs->current_player = GameState::Blacks;
+			gs->black = 0x7e0000000000007e;
+			gs->white = 0x0081818181818100;
+			return gs;
 		}
 		GameState* CreateInitialStateFromHash(const uint32_t*) override
 		{
@@ -193,37 +329,73 @@ namespace LinesOfAction
 		{
 			return s->is_terminal;
 		}
-		void Score(const GameState*, int score[]) override
+		void Score(const GameState *gs, int score[]) override
 		{
-			throw "not implemented";
+			const bool whiteWins = GameState::calcIfTerminal(gs->white);
+			const bool blackWins = GameState::calcIfTerminal(gs->black);
+			if (whiteWins && blackWins)
+			{
+				score[0] = score[1] = 50;
+			}
+			else {
+				score[0] = whiteWins ? 100 : 0;
+				score[1] = blackWins ? 100 : 0;
+			}
 		}
 		int GetCurrentPlayer(const GameState* s) override
 		{
 			return s->current_player;
 		}
-		MoveList* GetPlayerLegalMoves(const GameState*, int playerNum) override
+		MoveList* allocMoveList(int size)
 		{
-			throw "not implemented";
+			const size_t num_chunks = size * sizeof(Move) / m_moveListPool.ChunkSize + 1;
+			return m_moveListPool.alloc<MoveList>(num_chunks);
 		}
-		void ReleaseMoveList(MoveList*) override
+		MoveList* copyMoveList(MoveList* moves)
 		{
-			throw "not implemented";
+			auto* ml = allocMoveList(moves->size);
+			memcpy(ml, moves, sizeof(uint16_t) * (moves->size + 1));
+			return ml;
 		}
-		int GetNumMoves(const MoveList*) override
+		void ReleaseMoveList(MoveList* moves) override
 		{
-			throw "not implemented";
+			if (moves != &m_noop) {
+				const size_t num_chunks = moves->size * sizeof(Move) / m_moveListPool.ChunkSize + 1;
+				m_moveListPool.free(moves, num_chunks);
+			}
 		}
-		std::tuple<Move*, float> GetMoveFromList(MoveList*, int idx) override
+		MoveList* SelectMoveFromList(const MoveList* moves, int idx) override
 		{
-			throw "not implemented";
+			auto* ml = allocMoveList(1);
+			assert(ml->size == 1);
+			ml->move[0] = moves->move[idx];
+			return ml;
 		}
-		MoveList* SelectMoveFromList(const MoveList*, int idx) override
+		MoveList* GetPlayerLegalMoves(const GameState* gs, int playerNum) override
 		{
-			throw "not implemented";
+			if (playerNum != gs->current_player) return &m_noop;
+			uint16_t tmp[12 * 8 + 1];
+			auto move_list = reinterpret_cast<MoveList*>(tmp);
+			move_list->size = 0;
+			gs->getPlayerLegalMoves(*move_list);
+			return copyMoveList(move_list);
 		}
-		GameState* ApplyMove(const GameState*, Move*, int player) override
+		int	 GetNumMoves(const MoveList* ml) override
 		{
-			throw "not implemented";
+			return 	ml->size;
+		}
+		std::tuple<Move*, float> GetMoveFromList(MoveList* ml, int idx) override
+		{
+			auto* move = &ml->move[idx];
+			return { move,1.0f };
+		}
+		GameState* ApplyMove(const GameState *gs, Move* mv, int player) override
+		{
+			auto* ns = CopyGameState(gs);
+			if (mv != m_noop.move) {
+				ns->applyMove(*mv, player);
+			}
+			return ns;
 		}
 		GameState* Next(const GameState* s, const std::vector<MoveList*>& moves) override
 		{
@@ -239,29 +411,33 @@ namespace LinesOfAction
 			cs->current_player = current_player + 1;	//current_player if one bit field, will round to 0
 			return cs;
 		}
-		const uint32_t* GetStateHash(const GameState*) override
+		const uint32_t* GetStateHash(const GameState* gs) override
 		{
-			throw "not implemented";
+			return reinterpret_cast<const uint32_t*>(gs);
 		}
 		size_t GetStateHashSize() override
 		{
-			throw "not implemented";
+			return sizeof(GameState) / 4;
 		}
-		string ToString(const GameState*) override
+		string ToString(const GameState* gs) override
 		{
-			throw "not implemented";
+			return gs->toString();
 		}
-		wstring ToWString(const GameState*) override
+		wstring ToWString(const GameState* gs) override
 		{
-			throw "not implemented";
+			auto str = ToString(gs);
+			wstring wstr(str.begin(), str.end());
+			return wstr;
 		}
-		string ToString(const Move*) override
+		string ToString(const Move* mv) override
 		{
-			throw "not implemented";
+			return mv->toString();
 		}
-		wstring ToWString(const Move*) override
+		wstring ToWString(const Move* mv) override
 		{
-			throw "not implemented";
+			auto str = ToString(mv);
+			wstring wstr(str.begin(), str.end());
+			return wstr;
 		}
 		void Release() override
 		{

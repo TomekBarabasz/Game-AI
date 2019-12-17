@@ -24,7 +24,7 @@ using namespace LinesOfAction;
 
 #define BOOST_TEST_EQ_UINT64_t(x,y) BOOST_TEST((uint64_t)x == (uint64_t)y)
 
-BOOST_AUTO_TEST_SUITE(LinesOfActionGameState)
+BOOST_AUTO_TEST_SUITE(LinesOfAction_GameState)
 BOOST_AUTO_TEST_CASE(create)
 {
 	LinesOfActionGameRules loa;
@@ -72,5 +72,209 @@ BOOST_DATA_TEST_CASE(getRightDiagonalMask, butd::make(DPositions) ^ butd::make(R
 {
 	BOOST_TEST_EQ_UINT64_t(mask, GameState::getRightDiagonalMask(position));
 }
+BOOST_AUTO_TEST_SUITE_END();
 
+template <typename T>
+int n2p(T n)
+{
+	return n[0] - 'A' + (n[1] - '1') * 8;
+}
+
+
+uint64_t bfp(std::initializer_list<string> positions)
+{
+	uint64_t board = 0;
+	for (auto p : positions)
+	{
+		const int ipos = n2p(p);
+		board |= 1ull << ipos;
+	}
+	return board;
+}
+
+void test_moves(MoveList *moveList, std::initializer_list<const char*> expectedMoves)
+{
+	vector<int> mvInd;
+	for (int i = 0; i < moveList->size; ++i) mvInd.push_back(i);
+	
+	for (auto mvi : expectedMoves)
+	{
+		const auto from = n2p(mvi);
+		const auto to   = n2p(mvi + 4);
+		BOOST_TEST(!mvInd.empty());
+		bool found=false;
+		for (auto it=mvInd.begin(); it!=mvInd.end(); ++it) 
+		{
+			auto& mv = moveList->move[*it];
+			if (mv.from == from && mv.to == to) {
+				mvInd.erase(it);
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			BOOST_TEST_MESSAGE( string("move ") + mvi + " not found" );
+		}
+		BOOST_TEST(found);
+	}
+	for (auto i : mvInd) {
+		BOOST_TEST_MESSAGE(string("unexpected move ") + moveList->move[i].toString());
+	}
+	BOOST_TEST(mvInd.empty());
+}
+
+BOOST_AUTO_TEST_SUITE(LinesOfAction_Moves)
+/*   ABCDEFGH
+ * 8|........|
+ * 7|........|
+ * 6|........|
+ * 5|........|
+ * 4|........|
+ * 3|........|
+ * 2|........|
+ * 1|........|
+ *   ABCDEFGH */
+
+ /*   ABCDEFGH
+  * 2|........|
+  * 1|o.......|
+  *   ABCDEFGH */
+BOOST_AUTO_TEST_CASE(move_1)
+{
+	LinesOfActionGameRules gr;
+	GameState gs(bfp({"A1"}), 0, GameState::Whites);
+	
+	auto ml = gr.GetPlayerLegalMoves(&gs, 0);
+	test_moves(ml, { "A1->B1", "A1->A2", "A1->B2" });
+}
+
+/*   ABCDEFGH
+ * 8|........|
+ * 7|........|
+ * 6|........|
+ * 5|........|
+ * 4|........|
+ * 3|........|
+ * 2|...oo...|
+ * 1|........|
+ *   ABCDEFGH */
+BOOST_AUTO_TEST_CASE(move_2)
+{
+	LinesOfActionGameRules gr;
+	GameState gs(bfp({ "D2","E2" }), 0, GameState::Whites);
+
+	auto ml = gr.GetPlayerLegalMoves(&gs, 0);
+	test_moves(ml, {	"D2->B2", "D2->F2", "D2->D1", "D2->D3", "D2->C3", "D2->E3", "D2->E1", "D2->C1",
+								"E2->C2", "E2->G2", "E2->E1", "E2->E3", "E2->D3", "E2->F3", "E2->F1", "E2->D1" });
+}
+
+/*   ABCDEFGH
+ * 8|........|
+ * 7|........|
+ * 6|.......o|
+ * 5|........|
+ * 4|........|
+ * 3|o.......|
+ * 2|........|
+ * 1|........|
+ *   ABCDEFGH */
+BOOST_AUTO_TEST_CASE(move_3)
+{
+	LinesOfActionGameRules gr;
+	GameState gs(bfp({ "A3","H6" }), 0, GameState::Whites);
+
+	auto ml = gr.GetPlayerLegalMoves(&gs, 0);
+	test_moves(ml, {	"A3->A4","A3->B4","A3->B3","A3->B2","A3->A2",
+								"H6->H7","H6->G7","H6->G6","H6->G5","H6->H5"});
+}
+
+/*   ABCDEFGH
+ * 8|........|
+ * 7|........|
+ * 6|........|
+ * 5|*.*.....|
+ * 4|........|
+ * 3|o.*.....|
+ * 2|........|
+ * 1|..*.....|
+ *   ABCDEFGH */
+BOOST_AUTO_TEST_CASE(move_kill)
+{
+	LinesOfActionGameRules gr;
+	GameState gs(bfp({ "A3"}), bfp({"A5","C1","C3","C5"}), GameState::Whites);
+
+	auto ml = gr.GetPlayerLegalMoves(&gs, 0);
+	test_moves(ml, { "A3->A5","A3->C5","A3->C3","A3->C1","A3->A1"});
+}
+
+/*   ABCDEFGH
+ * 8|........|
+ * 7|........|
+ * 6|........|
+ * 5|........|
+ * 4|........|
+ * 3|.******.|
+ * 2|........|
+ * 1|........|
+ *   ABCDEFGH */
+BOOST_AUTO_TEST_CASE(move_row)
+{
+	LinesOfActionGameRules gr;
+	GameState gs(bfp({ "B3","C3","D3","E3","F3","G3" }), 0, GameState::Whites);
+
+	auto ml = gr.GetPlayerLegalMoves(&gs, 0);
+	test_moves(ml, {	"B3->C4","B3->B4","B3->A4","B3->A2","B3->B2","B3->C2","B3->H3",
+								"C3->D4","C3->C4","C3->B4","C3->B2","C3->C2","C3->D2",
+								"D3->E4","D3->D4","D3->C4","D3->C2","D3->D2","D3->E2",
+								"E3->F4","E3->E4","E3->D4","E3->D2","E3->E2","E3->F2",
+								"F3->E4","F3->F4","F3->G4","F3->E2","F3->F2","F3->G2",
+								"G3->F4","G3->G4","G3->H4","G3->F2","G3->G2","G3->H2", "G3->A3" });
+}
+
+BOOST_AUTO_TEST_CASE(move_noop)
+{
+	LinesOfActionGameRules gr;
+	GameState gs(bfp({ "B3","C3","D3","E3","F3","G3" }), 0, GameState::Whites);
+	auto ml = gr.GetPlayerLegalMoves(&gs, GameState::Blacks);
+	auto [mv, p] = gr.GetMoveFromList(ml, 0);
+	auto ns = gr.ApplyMove(&gs,mv, GameState::Blacks);
+	BOOST_TEST(gr.AreEqual(&gs, ns));
+	gr.ReleaseMoveList(ml);
+	gr.ReleaseGameState(ns);
+}
+
+BOOST_AUTO_TEST_SUITE_END();
+
+BOOST_AUTO_TEST_SUITE(LinesOfAction_misc)
+BOOST_AUTO_TEST_CASE(state_to_string)
+{
+	LinesOfActionGameRules gr;
+	auto gs = gr.CreateRandomInitialState(nullptr);
+	auto sstring = gr.ToString(gs);
+	//BOOST_TEST_MESSAGE(sstring);
+	string exp = ".******.\no......o\no......o\no......o\no......o\no......o\no......o\n.******.\ncp=1";
+	//BOOST_TEST_MESSAGE(exp);
+	BOOST_TEST(exp == gr.ToString(gs));
+	gr.ReleaseGameState(gs);
+}
+BOOST_AUTO_TEST_CASE(score_win)
+{
+	LinesOfActionGameRules gr;
+	GameState gs(bfp({ "B1","B2","C3"}), bfp({ "C5","C7" }), GameState::Whites);
+
+	int score[2];
+	gr.Score(&gs, score);
+	BOOST_TEST(score[GameState::Whites] == 100);
+	BOOST_TEST(score[GameState::Blacks] == 0);
+}
+BOOST_AUTO_TEST_CASE(score_draw)
+{
+	LinesOfActionGameRules gr;
+	
+	GameState gs(bfp({ "B1" }), bfp({"C5"}), GameState::Whites);
+	int score[2];
+	gr.Score(&gs, score);
+	BOOST_TEST(score[0] == 50);
+	BOOST_TEST(score[1] == 50);
+}
 BOOST_AUTO_TEST_SUITE_END();
