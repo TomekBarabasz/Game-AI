@@ -13,13 +13,20 @@
       <label>Playout Depth</label>
       <source>run_config</source>
       <var>players/player[@name="mcts"]#playout_depth</var>
-      <val>20,30,40,50,60,70</val>
+      <val>10,25,50,75,100,150,200,250,300</val>
+      <!--<val>20,30,40,50,60,70</val>-->
     </xaxis>
     <yaxis>
       <label>Win Ratio</label>
       <source>results</source>
       <var>p1#pts_ratio</var>
       <save>WinRatio_vs_PlayoutDepth</save>
+    </yaxis>
+    <yaxis>
+      <label>Terminal Nodes Found Ratio</label>
+      <source>results</source>
+      <var>p1#terminal_node_found_ratio</var>
+      <save>terminalNodeFoundRatio_vs_PlayoutDepth</save>
     </yaxis>
   </plotrun>
 </root>

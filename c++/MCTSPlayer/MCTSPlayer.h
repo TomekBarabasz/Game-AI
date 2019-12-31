@@ -105,6 +105,11 @@ namespace MC
 			}
 		}
 		uint8_t operator[](size_t i) const { return indices[i]; }
+		void removeNth(size_t mi)
+		{
+			size -= 1;
+			indices[mi] = indices[size];
+		}
 		uint8_t size;
 		uint8_t indices[1];
 		//next will follow
@@ -132,6 +137,7 @@ namespace MC
 		Histogram<string>	m_find_root_node_result;
 		Histogram<long> m_simulation_end_node;
 		Histogram<long> m_best_move_is_most_visited;
+		Histogram<long> m_branching_factor;
 		const bool		m_release_nodes_during_find;
 		using StatesBimap = boost::bimap<boost::bimaps::set_of<string>, boost::bimaps::set_of<StateNode*>>;
 		StatesBimap		m_states_in_game_tree;
@@ -166,7 +172,7 @@ namespace MC
 		void backpropagation(Path_t& path, bool cycle);
 		void freeTemporaryNodes(StateNode * root, unsigned short visit_id);
 		void expansion(Path_t& path);
-		MoveNode* selectMove(StateNode* node, const ValidMoveList& moves, double C);
+		std::tuple<MoveNode*,size_t> selectMove(StateNode* node, const ValidMoveList& moves, double C, unsigned short visit_id);
 		MoveNode* selectBestMove(StateNode* node);
 		StateNode* makeTreeNode(GameState* pks);
 		void makeNodePermanent(StateNode * sn);

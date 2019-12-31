@@ -44,23 +44,18 @@ struct GameState
 	uint64_t white;
 	uint64_t black;
 	uint64_t current_player : 1;
-	uint64_t is_terminal	: 1;
+	mutable uint64_t is_terminal	: 2;
 
-	GameState() {}
+	GameState() : is_terminal(0) {}
 	GameState(uint64_t wh, uint64_t bl, int cp)
-		: white(wh), black(bl), current_player(cp), is_terminal(calcIfTerminal(white) || calcIfTerminal(black))
+		: white(wh), black(bl), current_player(cp), is_terminal(0)
 	{}
 	static bool calcIfTerminal(uint64_t board)
 	{
 		if (__popcnt64(board) == 1) return true;
-		unsigned long idx;
-		uint64_t tmp = board;
-		while(_BitScanForward64(&idx, tmp))
-		{
-			if (0 == (board & getNeighbourMask(idx))) return false;
-			tmp &= ~(1 << idx);
-		}
-		return true;
+		uint8_t boardGroupArr[64];
+		const int groups_cnt = calcNumGroups(board, boardGroupArr);
+		return groups_cnt == 1;
 	}
 	static uint64_t getNeighbourMask(long position)
 	{
@@ -139,7 +134,7 @@ struct GameState
 		}
 		return m;
 	}
-	static void addMoveIfValid(int pos, int row, int col, uint64_t pieces, MoveList& ml)
+	static void addMoveIfValid(uint64_t other_on_line, int pos, int row, int col, uint64_t pieces, MoveList& ml)
 	{
 		if (row >=0 && row <=7 && col >=0 && col <=7)
 		{
@@ -147,11 +142,29 @@ struct GameState
 			const uint64_t newPosMask = 1ull << newPos;
 			if (0 == (pieces & newPosMask))
 			{
-				auto& mv = ml.move[ml.size++];
-				mv.from = pos;
-				mv.to = newPos;
+				//there must be no other pieces between starting and ending position on the board
+				//other piece on ending position is allowed - it will be captured (and removed from board)
+				other_on_line &= ~newPosMask;
+				const uint64_t mvMask = newPos > pos ? ((1ull << (newPos - pos)) - 1) << pos : ((1ull << (pos - newPos)) - 1) << newPos;
+				if (0 == (other_on_line & mvMask)) {
+					auto& mv = ml.move[ml.size++];
+					mv.from = pos;
+					mv.to = newPos;
+				}
 			}
 		}
+	}
+	bool isTerminal() const
+	{
+		/*if (is_terminal != 0) {
+			const bool bIsTerminal = is_terminal - 1 > 0;
+			const bool ist = calcIfTerminal(white) || calcIfTerminal(black);
+			assert(bIsTerminal == ist);
+			return is_terminal - 1;
+		}*/
+		const bool ist = calcIfTerminal(white) || calcIfTerminal(black);
+		is_terminal = 1 + (ist ? 1 : 0);
+		return ist;
 	}
 	int getPlayerLegalMoves(MoveList& ml) const
 	{
@@ -176,39 +189,46 @@ struct GameState
 			const int col = position % 8;
 			const int row = position / 8;
 			//row
-			auto line = all & getRowMask(position) ;
+			auto line_mask = getRowMask(position);
+			auto line = all & line_mask ;
 			int cnt = static_cast<int>(__popcnt64(line));
-			
 			//left
-			addMoveIfValid(position, col - cnt, row, my, ml);			
+			addMoveIfValid(other & line_mask, position, col - cnt, row, my, ml);			
 			//right
-			addMoveIfValid(position, col + cnt, row, my, ml);
+			addMoveIfValid(other & line_mask, position, col + cnt, row, my, ml);
 
 			//column
-			line = all & getColumnMask(position);
+			line_mask = getColumnMask(position);
+			line = all & line_mask;
 			cnt = static_cast<int>(__popcnt64(line));
 			//up
-			addMoveIfValid(position, col, row + cnt, my, ml);
+			addMoveIfValid(other & line_mask, position, col, row + cnt, my, ml);
 			//down
-			addMoveIfValid(position, col, row - cnt, my, ml);
-			
+			addMoveIfValid(other & line_mask, position, col, row - cnt, my, ml);
+
 			//left diagonal
-			line = all & getLeftDiagonalMask(position);
+			line_mask = getLeftDiagonalMask(position);
+			line = all & line_mask;
 			cnt = static_cast<int>(__popcnt64(line));
 			//up-left
-			addMoveIfValid(position, col - cnt, row + cnt, my, ml);
+			addMoveIfValid(other & line_mask, position, col - cnt, row - cnt, my, ml);
 			//down-right
-			addMoveIfValid(position, col + cnt, row - cnt, my, ml);
-			
+			addMoveIfValid(other & line_mask, position, col + cnt, row + cnt, my, ml);
+
 			//right diagonal
-			line = all & getRightDiagonalMask(position);
+			line_mask = getRightDiagonalMask(position);
+			line = all & line_mask;
 			cnt = static_cast<int>(__popcnt64(line));
 			//up-right
-			addMoveIfValid(position, col + cnt, row + cnt, my, ml);
+			addMoveIfValid(other & line_mask, position, col + cnt, row - cnt, my, ml);
 			//down-left
-			addMoveIfValid(position, col - cnt, row - cnt, my, ml);
+			addMoveIfValid(other & line_mask, position, col - cnt, row + cnt, my, ml);
 			
 			tmp &= ~curPosMask;
+			assert(ml.size <= 12 * 8);
+		}
+		for (int i=0;i<ml.size;++i)	{
+			assert(ml.move[i].from != ml.move[i].to);
 		}
 		return ml.size;
 	}
@@ -250,6 +270,64 @@ struct GameState
 		ss << "cp=" << current_player;
 		return ss.str();
 	}
+	static int calcNumGroups(uint64_t boardMask, uint8_t *boardGroupArr)
+	{
+		uint64_t tmp = boardMask;
+
+		memset(boardGroupArr, 0, 64 * sizeof(uint8_t));
+		uint8_t maxGroup = 0;
+		while(tmp)
+		{
+			unsigned long pos;
+			_BitScanForward64(&pos, tmp);
+			uint64_t currentPosMask = 1ull << pos;
+			
+			uint64_t groupMask = currentPosMask;
+			uint64_t groupMaskAlreadyChecked = 0;
+			uint8_t currGroup = boardGroupArr[pos];
+			if (0 == currGroup) {
+				currGroup = ++maxGroup;
+			}
+			uint64_t groupMaskToCheck = groupMask & ~groupMaskAlreadyChecked;
+			while (groupMaskToCheck)
+			{
+				_BitScanForward64(&pos, groupMaskToCheck);
+				currentPosMask = 1ull << pos;				
+				if (boardGroupArr[pos] != currGroup) {
+					assert(boardGroupArr[pos] == 0);
+					boardGroupArr[pos] = currGroup;
+					groupMask |= getNeighbourMask(pos) & boardMask;
+				}
+				tmp &= ~currentPosMask;
+				groupMaskAlreadyChecked |= currentPosMask;
+				groupMaskToCheck = groupMask & ~groupMaskAlreadyChecked;
+			}
+		}
+		return maxGroup;
+	}
+	/*
+	static int calcSumOfGapsBetweenGroups(uint64_t board)
+	{
+		unsigned long max_gap = 0;
+		unsigned long prev_r, prev_c;
+		bool first = true;
+		while(board)
+		{
+			unsigned long pos;
+			_BitScanForward64(&pos, board);
+			if (!first)
+			{
+				const auto gap_r = pos % 8 - prev_pos % 8;
+				const auto gap_c = pos / 8 - pos / 8;
+				const auto gap = __min(gap_r, gap_c);
+				max_gap = __max(gap, max_gap);
+				first = false;
+				prev_r = pos
+			}
+			prev_pos = pos;
+		}
+		return max_gap;
+	}*/
 };
 
 namespace LinesOfAction
@@ -305,7 +383,19 @@ namespace LinesOfAction
 		}
 		EvalFunction_t CreateEvalFunction(const string& name) override
 		{
-			throw "not implemented";
+			auto proc_connected = [](const GameState* gs, int value[])
+			{
+				uint8_t boardGroupArr[64];
+				auto numWhiteGroups = GameState::calcNumGroups(gs->white, boardGroupArr);
+				auto numBlackGroups = GameState::calcNumGroups(gs->black, boardGroupArr);
+				value[0] = __max(0, 100 - 20 * (numWhiteGroups - 1));
+				value[1] = __max(0, 100 - 20 * (numBlackGroups - 1));
+			};
+			auto dummy = [](const GameState* gs, int value[])
+			{
+				value[0] = value[1] = 50;
+			};
+			return dummy;
 		}
 		void UpdatePlayerKnownState(GameState* playerKnownState, const GameState* completeGameState,const std::vector<MoveList*>& playerMoves) override
 		{
@@ -327,7 +417,7 @@ namespace LinesOfAction
 		}
 		bool IsTerminal(const GameState* s) override
 		{
-			return s->is_terminal;
+			return s->isTerminal();
 		}
 		void Score(const GameState *gs, int score[]) override
 		{
@@ -366,9 +456,10 @@ namespace LinesOfAction
 		}
 		MoveList* SelectMoveFromList(const MoveList* moves, int idx) override
 		{
+			if (moves == &m_noop) return const_cast<MoveList*>(moves);
 			auto* ml = allocMoveList(1);
-			assert(ml->size == 1);
 			ml->move[0] = moves->move[idx];
+			ml->size = 1;
 			return ml;
 		}
 		MoveList* GetPlayerLegalMoves(const GameState* gs, int playerNum) override
@@ -395,6 +486,7 @@ namespace LinesOfAction
 			if (mv != m_noop.move) {
 				ns->applyMove(*mv, player);
 			}
+			ns->current_player += 1;	//current_player if one bit field, will round to 0
 			return ns;
 		}
 		GameState* Next(const GameState* s, const std::vector<MoveList*>& moves) override

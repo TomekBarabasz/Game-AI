@@ -231,16 +231,56 @@ BOOST_AUTO_TEST_CASE(move_row)
 								"G3->F4","G3->G4","G3->H4","G3->F2","G3->G2","G3->H2", "G3->A3" });
 }
 
+/*   ABCDEFGH
+ * 8|........|
+ * 7|........|
+ * 6|........|
+ * 5|........|
+ * 4|*.......|
+ * 3|........|
+ * 2|........|
+ * 1|o.**....|
+ *   ABCDEFGH */
+BOOST_AUTO_TEST_CASE(move_other_piece_prevents_move)
+{
+	LinesOfActionGameRules gr;
+	GameState gs(bfp({ "A1" }), bfp({ "A4","C1","D1"}), GameState::Whites);
+
+	auto ml = gr.GetPlayerLegalMoves(&gs, 0);
+	test_moves(ml, { "A1->A3","A1->B2"});
+}
+
+/*   ABCDEFGH
+ * 8|........|
+ * 7|........|
+ * 6|........|
+ * 5|........|
+ * 4|.......o|
+ * 3|......*.|
+ * 2|........|
+ * 1|........|
+ *   ABCDEFGH */
+BOOST_AUTO_TEST_CASE(move_other_piece_prevents_move_2)
+{
+	LinesOfActionGameRules gr;
+	GameState gs(bfp({ "H4" }), bfp({ "G3" }), GameState::Whites);
+
+	auto ml = gr.GetPlayerLegalMoves(&gs, 0);
+	test_moves(ml, { "H4->H5","H4->G5","H4->G4","H4->H3" });
+}
+
 BOOST_AUTO_TEST_CASE(move_noop)
 {
 	LinesOfActionGameRules gr;
 	GameState gs(bfp({ "B3","C3","D3","E3","F3","G3" }), 0, GameState::Whites);
 	auto ml = gr.GetPlayerLegalMoves(&gs, GameState::Blacks);
 	auto [mv, p] = gr.GetMoveFromList(ml, 0);
-	auto ns = gr.ApplyMove(&gs,mv, GameState::Blacks);
-	BOOST_TEST(gr.AreEqual(&gs, ns));
+	auto ns  = gr.ApplyMove(&gs, mv, GameState::Blacks);
+	auto ns2 = gr.ApplyMove(ns, mv, GameState::Whites);
+	BOOST_TEST(gr.AreEqual(&gs, ns2));
 	gr.ReleaseMoveList(ml);
 	gr.ReleaseGameState(ns);
+	gr.ReleaseGameState(ns2);
 }
 
 BOOST_AUTO_TEST_SUITE_END();
@@ -276,5 +316,70 @@ BOOST_AUTO_TEST_CASE(score_draw)
 	gr.Score(&gs, score);
 	BOOST_TEST(score[0] == 50);
 	BOOST_TEST(score[1] == 50);
+}
+BOOST_AUTO_TEST_CASE(is_terminal_1)
+{
+	LinesOfActionGameRules gr;
+
+	GameState gs(0x0000000020000000, 0x4000000000000000, GameState::Whites);
+	BOOST_TEST(gr.IsTerminal(&gs));
+	int score[2];
+	gr.Score(&gs, score);
+	BOOST_TEST(score[0] == 50);
+	BOOST_TEST(score[1] == 50);
+}
+
+BOOST_AUTO_TEST_CASE(is_terminal_2)
+{
+	LinesOfActionGameRules gr;
+
+	auto gs = gr.CreateRandomInitialState(nullptr);
+	BOOST_TEST(!gr.IsTerminal(gs));
+	gr.ReleaseGameState(gs);
+}
+/*
+ ABCDEFGH
+8....o...
+7o.......
+6....o...
+5o.......
+4........
+3.o.....o
+2......*.
+1.....*..
+ ABCDEFGH
+ */
+BOOST_AUTO_TEST_CASE(is_terminal_3)
+{
+	LinesOfActionGameRules gr;
+
+	GameState gs(bfp({ "E8","A7","E6","A5","B3","H3" }), bfp({ "F1","G2" }), GameState::Whites);
+	BOOST_TEST(gr.IsTerminal(&gs));
+}
+
+/*
+ ABCDEFGH
+8......o.
+7...o....
+6........
+5........
+4.....*.o
+3......**
+2........
+1........
+ ABCDEFGH
+ */
+BOOST_AUTO_TEST_CASE(is_terminal_4)
+{
+	LinesOfActionGameRules gr;
+
+	GameState gs(bfp({ "G8","D7","H4" }), bfp({ "F4","G3","H3" }), GameState::Whites);
+	BOOST_TEST(gr.IsTerminal(&gs));
+}
+BOOST_AUTO_TEST_CASE(applyMove_normal)
+{
+}
+BOOST_AUTO_TEST_CASE(applyMove_kill)
+{
 }
 BOOST_AUTO_TEST_SUITE_END();
