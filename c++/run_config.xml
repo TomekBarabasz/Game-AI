@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
-  <game num_games="10" _start_state="S=|P0=9.3h10.3cW.3sD.3hK.3cA.3c|P1=9.3c10.3hW.3hD.3sK.3hA.3h|P2=9.3s10.3sW.3cD.3dK.3dA.3d|CP=0" round_limit="100" num_threads="1" provider="GraWPanaZasadyV2" _verbose="game.log" save="results.xml" out_dir="c:\MyData\Projects\gra_w_pana\logs" sync_player="2" />
+  <game num_games="10" _start_state="S=|P0=9.3h10.3cW.3sD.3hK.3cA.3c|P1=9.3c10.3hW.3hD.3sK.3hA.3h|P2=9.3s10.3sW.3cD.3dK.3dA.3d|CP=0" start_state="S=|P0=10.3h10.3sW.3hW.3dD.3hD.3sD.3dK.3hK.3cA.3hA.3sA.3d|P1=9.3h9.3c9.3s9.3d10.3c10.3dW.3cW.3sD.3cK.3sK.3dA.3c|CP=1" round_limit="100" num_threads="1" provider="GraWPanaZasadyV2" _verbose="game.log" verbose="console" save="results.xml" out_dir="c:\MyData\Projects\gra_w_pana\logs" sync_player="2" />
   <players>
     <player name="ab11ncw" provider="minmaxabplayer" search_depth="11" _move_time_limit="1" eval_function="num_cards_weighted" knows_complete_game_state="1" />
     <player name="ab11nco" provider="minmaxabplayer" search_depth="11" _move_time_limit="1" eval_function="num_cards" knows_complete_game_state="1" />

@@ -44,11 +44,10 @@ struct GameState
 	uint64_t white;
 	uint64_t black;
 	uint64_t current_player : 1;
-	mutable uint64_t is_terminal	: 2;
-
-	GameState() : is_terminal(0) {}
+	
+	GameState(){}
 	GameState(uint64_t wh, uint64_t bl, int cp)
-		: white(wh), black(bl), current_player(cp), is_terminal(0)
+		: white(wh), black(bl), current_player(cp)
 	{}
 	static bool calcIfTerminal(uint64_t board)
 	{
@@ -163,7 +162,6 @@ struct GameState
 			return is_terminal - 1;
 		}*/
 		const bool ist = calcIfTerminal(white) || calcIfTerminal(black);
-		is_terminal = 1 + (ist ? 1 : 0);
 		return ist;
 	}
 	int getPlayerLegalMoves(MoveList& ml) const

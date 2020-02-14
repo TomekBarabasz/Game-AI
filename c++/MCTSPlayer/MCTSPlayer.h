@@ -138,6 +138,7 @@ namespace MC
 		Histogram<long> m_simulation_end_node;
 		Histogram<long> m_best_move_is_most_visited;
 		Histogram<long> m_branching_factor;
+		Histogram<long> m_path_size;
 		const bool		m_release_nodes_during_find;
 		using StatesBimap = boost::bimap<boost::bimaps::set_of<string>, boost::bimaps::set_of<StateNode*>>;
 		StatesBimap		m_states_in_game_tree;
