@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
-  <game num_games="10" round_limit="100" num_threads="1" provider="LinesOfActionZasady" verbose="game.log" save="results.xml" out_dir="c:\MyData\Projects\gra_w_pana\logs" sync_player="2" trace_pks="0" />
+  <game num_games="10" round_limit="300" num_threads="1" provider="LinesOfActionZasady" verbose="game.log" save="results.xml" out_dir="c:\MyData\Projects\gra_w_pana\logs" sync_player="2" trace_pks="0" />
   <players>
     <player name="ab11nco" provider="minmaxabplayer" search_depth="11" _move_time_limit="1" eval_function="num_cards" knows_complete_game_state="1" />
     <player name="mcts" provider="mctsplayer" explore_exploit_ratio="2.0" playout_depth="50000" expand_size="3" expand_from_last_permanent_node="1" _move_sim_limit="50" move_time_limit="1" _trace_move_filename="mcts_move_tree" _game_tree_filename="mcts_game_tree" trace="mcts.log" weighted_backprop="0" eval_function="num_cards_weighted" best_move_value_eps="0.05" cycle_score="50" out_dir="c:\MyData\Projects\gra_w_pana\dbg_logs" type="mcts"></player>
