@@ -157,6 +157,7 @@
     <ClInclude Include="GraWZombiakiZasady.h" />
     <ClInclude Include="Karty.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Plansza.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>

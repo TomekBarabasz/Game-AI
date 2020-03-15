@@ -27,6 +27,9 @@
     <ClInclude Include="Karty.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Plansza.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GraWZombiakiZasady.cpp">
@@ -38,13 +41,13 @@
     <ClCompile Include="pch_gwz.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Plansza.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Karty.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Akcje.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Plansza.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

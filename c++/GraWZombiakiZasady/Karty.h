@@ -1,71 +1,79 @@
 #pragma once
 #include <cstdint>
+#include <functional>
+#include <vector>
+
+struct GameState;
+struct MoveList;
 
 namespace GraWZombiaki
 {
-	enum class Gracz : uint8_t { zombie = 0, human = 1 };
-	enum class TypKartyZombie : uint8_t { zombiak = 0, wzmocnienie, akcja };
-	enum class TypZombie
+	enum Player : uint8_t { zombie = 0, human = 1 };
+	enum TypKarty : uint8_t { obiekt = 0, wzmocnienie, akcja };
+	
+	enum ObiektLudzi : uint8_t
 	{
-		zwykly_2 = 0,
-		zwykly_3,
-		zwykly_4,
-		zwykly_5,
-		kot,
-		pies,
-		krystyna,
-		kon_trojanski,
-		kuloodporny,
-		galareta,
-		syjamczyk,
-		mlody
+		zapora, mur, beczka, mina, samochod, dziura
 	};
-	enum class Akcja : uint8_t { klik, masa, terror, mieso, kilof, glod, wiadro, ugryzienie, spadaj, papu, swit };
-	enum class Wzmocnienie : uint8_t { pazury = 0, czlowiek, boss, mis };
-	struct KartaZombie
+	enum ObiektZombie : uint8_t
+	{
+		zombiak_1, zombiak_2, zombiak_3, zombiak_4, zombiak_5,
+		kot, pies,
+		krystyna, kon_trojanski, kuloodporny, galareta, syjamczyk, mlody
+	};
+	enum AkcjaLudzi : uint8_t
+	{
+		strzal, lepszy_strzal, zmiataj, krotka_seria, dluga_seria, sniper, jajnik, wynocha, granat, stop,
+		siec, reflektor, v220, miotacz, gaz, raca, ropa, krew, ulica_w_ogniu, chuck
+	};
+	enum AkcjaZombie : uint8_t
+	{
+		klik, masa, terror, mieso, kilof, glod, wiadro, ugryzienie, spadaj, papu, swit
+	};
+	enum WzmocnienieLudzi : uint8_t
+	{
+		betonowe_buty
+	};
+
+	enum WzmocnienieZombie : uint8_t
+	{
+		pazury, czlowiek, boss, mis
+	};
+
+	struct Card
 	{
 		union {
 			struct {
-				uint8_t gracz  : 1;
-				uint8_t typ    : 2;
+				uint8_t player : 1;
+				uint8_t typ : 2;
 				uint8_t podtyp : 5;
 			};
 			uint8_t value;
 		};
-		//KartaZombie(){}
-		KartaZombie(TypZombie z)  : gracz(uint8_t(Gracz::zombie)), typ(uint8_t(TypKartyZombie::zombiak)),	  podtyp(uint8_t(z)) {}
-		KartaZombie(Akcja a)	  : gracz(uint8_t(Gracz::zombie)), typ(uint8_t(TypKartyZombie::akcja)),		  podtyp(uint8_t(a)) {}
-		KartaZombie(Wzmocnienie w): gracz(uint8_t(Gracz::zombie)), typ(uint8_t(TypKartyZombie::wzmocnienie)), podtyp(uint8_t(w)) {}
-		
-		/*static KartaZombie makeKAkcja(Akcja a)
-		{
-			KartaZombie k{ {uint8_t(Gracz::zombie), uint8_t(TypKartyZombie::akcja), uint8_t(a)} };
-			return k;
-		}*/
-		/*static uint8_t Akcja(Akcja a)
-		{
-			KartaZombie kz;
-			kz.gracz = Gracz::zombie;
-			kz.typ = TypKartyZombie::akcja;
-			kz.podtyp = (uint8_t)a;
-			return kz.value;
-		}
-		static uint8_t Wzmocnienie(Wzmocnienie w)
-		{
-			KartaZombie kz;
-			kz.gracz = Gracz::zombie;
-			kz.typ = TypKartyZombie::wzmocnienie;
-			kz.podtyp = (uint8_t)w;
-			return kz.value;
-		}*/
+		Card(){}
+		Card(uint8_t p, uint8_t t, uint8_t pt) : player(p), typ(t), podtyp(pt){}
+		Player getPlayer() const { return static_cast<Player>(player); };
+		TypKarty getType() const { return static_cast<TypKarty>(typ); }
+		uint8_t getSubType() const { return podtyp; }
 	};
-	inline uint8_t KZombiak(TypZombie z)	   { KartaZombie k(z); return k.value; }
-	inline uint8_t KAkcja(Akcja a)			   { KartaZombie k(a); return k.value; }
-	inline uint8_t KWzmocnienie(Wzmocnienie w) { KartaZombie k(w); return k.value; }
-	template <typename PODTYP>
-	uint8_t makeKartaZombie(PODTYP p)
+	inline bool operator< (const Card& lhs, const Card& rhs) { return lhs.value < rhs.value; }
+	struct ZombieCard : Card
 	{
-		KartaZombie k(p);
-		return k.value;
-	}
+		ZombieCard(ObiektZombie z) : Card(zombie, TypKarty::obiekt, z){}
+		ZombieCard(AkcjaZombie a)	: Card(zombie, akcja, a) {}
+		ZombieCard(WzmocnienieZombie w): Card(zombie, wzmocnienie, w) {}
+	};
+	struct HumanCard : Card
+	{
+		HumanCard(ObiektLudzi z) : Card(human, TypKarty::obiekt, z) {}
+		HumanCard(AkcjaLudzi a) : Card(human, akcja, a) {}
+		HumanCard(WzmocnienieLudzi w) : Card(human, wzmocnienie, w) {}
+	};
+
+	struct Card_If
+	{
+		virtual unsigned  getValidApplications	(const GameState* gs, Card card, std::vector<uint16_t>& moves) = 0;
+		virtual void	  play					(GameState* gs, unsigned przecznica, unsigned tor, Card card) = 0;
+		virtual void	  use					(GameState* gs, Card card) = 0;
+	};
 }

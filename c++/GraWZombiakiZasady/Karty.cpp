@@ -1,85 +1,198 @@
 ﻿#include "pch.h"
 #include "Karty.h"
 #include "GraWZombiakiZasady.h"
+#include "Plansza.h"
 
 namespace GraWZombiaki
 {
-	static const uint8_t KartyZombi[] =
+	struct Zombiak_If : Card_If
 	{
-		KZombiak (TypZombie::zwykly_2 )
-		,KZombiak(TypZombie::zwykly_2 )
-		,KZombiak(TypZombie::zwykly_3 )
-		,KZombiak(TypZombie::zwykly_3 )
-		,KZombiak(TypZombie::zwykly_3 )
-		,KZombiak(TypZombie::zwykly_3 )
-		,KZombiak(TypZombie::zwykly_3 )
-		,KZombiak(TypZombie::zwykly_3 )
-		,KZombiak(TypZombie::zwykly_4 )
-		,KZombiak(TypZombie::zwykly_4 )
-		,KZombiak(TypZombie::zwykly_4 )
-		,KZombiak(TypZombie::zwykly_5 )
-		,KZombiak(TypZombie::kot )
-		,KZombiak(TypZombie::pies )
-		,KZombiak(TypZombie::krystyna )
-		,KZombiak(TypZombie::kon_trojanski )
-		,KZombiak(TypZombie::galareta )
-		,KZombiak(TypZombie::mlody )
-		,KZombiak(TypZombie::kuloodporny )
-		,KZombiak(TypZombie::syjamczyk )
-
-		,KWzmocnienie(Wzmocnienie::boss)
-		,KWzmocnienie(Wzmocnienie::mis)
-		,KWzmocnienie(Wzmocnienie::czlowiek)
-		,KWzmocnienie(Wzmocnienie::czlowiek)
-		,KWzmocnienie(Wzmocnienie::czlowiek)
-		,KWzmocnienie(Wzmocnienie::pazury)
-
-		,KAkcja(Akcja::klik)
-		,KAkcja(Akcja::klik)
-		,KAkcja(Akcja::masa)
-		,KAkcja(Akcja::masa)
-		,KAkcja(Akcja::terror)
-		,KAkcja(Akcja::terror)
-		,KAkcja(Akcja::mieso)
-		,KAkcja(Akcja::glod)
-		,KAkcja(Akcja::wiadro)
-		,KAkcja(Akcja::kilof)
-		,KAkcja(Akcja::ugryzienie)
-		,KAkcja(Akcja::spadaj)
-		,KAkcja(Akcja::papu)
-		,KAkcja(Akcja::swit)
+		unsigned getValidApplications(const GameState* gs, Card card, std::vector<uint16_t>& moves) override
+		{
+			return 0;
+		}
+		void play(GameState* gs, unsigned przecznica, unsigned tor, Card card) override
+		{
+		}
+		void use(GameState* gs, Card card) override
+		{
+		}
 	};
-	/*static const uint8_t KartyZombi_invalid[] =
-	{
-		KartaZombie::Zombiak(TypZombie::zwykly_2)// L"Krzysztof")
-		,KartaZombie::Zombiak(TypZombie::zwykly_2)// L"Czesiek")
-		,KartaZombie::Zombiak(TypZombie::zwykly_3)// L"Wacek")
-		,KartaZombie::Zombiak(TypZombie::zwykly_3)// L"Kazimierz")
-		,KartaZombie::Zombiak(TypZombie::zwykly_3)// L"Andrzej")
-		,KartaZombie::Zombiak(TypZombie::zwykly_3)// L"Arkadiusz")
-		,KartaZombie::Zombiak(TypZombie::zwykly_3)//L"Zenek")
-		,KartaZombie::Zombiak(TypZombie::zwykly_3)//L"Mietek")
-		,KartaZombie::Zombiak(TypZombie::zwykly_4)//,L"Marian")
-		,KartaZombie::Zombiak(TypZombie::zwykly_4)//,L"Mariusz")
-		,KartaZombie::Zombiak(TypZombie::zwykly_4)//, L"Stefan")
-		,KartaZombie::Zombiak(TypZombie::zwykly_5)//, L"Iwan")
-		,KartaZombie::Zombiak(TypZombie::kot)//,L"kot")
-		,KartaZombie::Zombiak(TypZombie::pies)//,L"pies")
-		,KartaZombie::Zombiak(TypZombie::krystyna)// 16,L"krystynka")
-		,KartaZombie::Zombiak(TypZombie::kon_trojanski)//ski, 17, L"koń trojański")
-		,KartaZombie::Zombiak(TypZombie::galareta)//18, L"galareta")
-		,KartaZombie::Zombiak(TypZombie::mlody)// L"młody")
-		,KartaZombie::Zombiak(TypZombie::kuloodporny)//y, 20,L"kuloodporny")
-		,KartaZombie::Zombiak(TypZombie::syjamczyk)// 21, L"syjamczyk")
-	};*/
 
-	static const uint8_t KartyLudzi =
+	struct Kot_If : Card_If
 	{
+		unsigned getValidApplications(const GameState* gs, Card card, std::vector<uint16_t>& moves) override
+		{
+			KartaNaPlanszy kot;
+			kot.player = Player::zombie;
+			kot.typ = ObiektZombie::kot;
+			auto [pos, found] = gs->plansza.find(kot);
+			if (found) {
+				//TODO: fill valid move positions
+			}
+			return 0;
+		}
+		void play(GameState* gs, unsigned przecznica, unsigned tor, Card card) override
+		{
+		}
+		void use(GameState* gs, Card card) override
+		{
+		}
 	};
-	const uint8_t* GraWZombiakiZasady::getZombieCards() {
-		return (uint8_t*) KartyZombi;
+
+	struct Pies_If : Card_If
+	{
+		unsigned getValidApplications(const GameState* gs, Card card, std::vector<uint16_t>& moves) override
+		{
+			KartaNaPlanszy kot;
+			kot.player = Player::zombie;
+			kot.typ = ObiektZombie::kot;
+			auto [pos, found] = gs->plansza.find(kot);
+			if (found) {
+				//TODO: fill valid move positions
+			}
+			return 0;
+		}
+		void play(GameState* gs, unsigned przecznica, unsigned tor, Card card) override
+		{
+		}
+		void use(GameState* gs, Card card) override
+		{
+		}
+	};
+	
+	struct Strzal_If : Card_If
+	{
+		unsigned getValidApplications(const GameState* gs, Card card, std::vector<uint16_t>& moves) override
+		{
+			return 0;
+		}
+		void play(GameState* gs, unsigned przecznica, unsigned tor, Card card) override
+		{
+		}
+		void use(GameState* gs, Card card) override
+		{
+		}
+	};
+	
+	static const ZombieCard zombieCards[] =
+	{
+		ZombieCard(zombiak_2)
+		,ZombieCard(zombiak_2)
+		,ZombieCard(zombiak_3)
+		,ZombieCard(zombiak_3)
+		,ZombieCard(zombiak_3)
+		,ZombieCard(zombiak_3)
+		,ZombieCard(zombiak_3)
+		,ZombieCard(zombiak_3)
+		,ZombieCard(zombiak_4)
+		,ZombieCard(zombiak_4)
+		,ZombieCard(zombiak_4)
+		,ZombieCard(zombiak_5)
+		,ZombieCard(kot)
+		,ZombieCard(pies)
+		,ZombieCard(krystyna)
+		,ZombieCard(kon_trojanski)
+		,ZombieCard(galareta)
+		,ZombieCard(mlody)
+		,ZombieCard(kuloodporny)
+		,ZombieCard(syjamczyk)
+
+		,ZombieCard(boss)
+		,ZombieCard(mis)
+		,ZombieCard(czlowiek)
+		,ZombieCard(czlowiek)
+		,ZombieCard(czlowiek)
+		,ZombieCard(pazury)
+
+		,ZombieCard(klik)
+		,ZombieCard(klik)
+		,ZombieCard(masa)
+		,ZombieCard(masa)
+		,ZombieCard(terror)
+		,ZombieCard(terror)
+		,ZombieCard(mieso)
+		,ZombieCard(glod)
+		,ZombieCard(wiadro)
+		,ZombieCard(kilof)
+		,ZombieCard(ugryzienie)
+		,ZombieCard(spadaj)
+		,ZombieCard(papu)
+		,ZombieCard(swit)
+	};
+	
+	const Card* GraWZombiakiZasady::getZombieCards()
+	{
+		return (Card*)zombieCards;
 	}
-	const uint8_t* GraWZombiakiZasady::getHumanCards() {
-		return (uint8_t*) KartyLudzi;
+	
+	static const HumanCard humanCards[] =
+	{
+		HumanCard(strzal),
+		HumanCard(strzal),
+		HumanCard(strzal),
+		HumanCard(strzal),
+		HumanCard(strzal),
+		HumanCard(strzal),
+		HumanCard(strzal),
+		HumanCard(lepszy_strzal),
+		HumanCard(lepszy_strzal),
+		HumanCard(lepszy_strzal),
+		HumanCard(zmiataj),
+
+		HumanCard(krotka_seria),
+		HumanCard(dluga_seria),
+		HumanCard(sniper),
+		HumanCard(jajnik),
+		HumanCard(wynocha),
+		HumanCard(granat),
+		HumanCard(stop),
+		HumanCard(reflektor),
+		HumanCard(v220),
+		HumanCard(miotacz),
+		HumanCard(gaz),
+		HumanCard(raca),
+		HumanCard(ropa),
+		HumanCard(krew),
+		HumanCard(ulica_w_ogniu),
+		HumanCard(chuck),
+		
+		HumanCard(zapora),
+		HumanCard(mur),
+		HumanCard(siec),
+		HumanCard(beczka),
+		HumanCard(mina),
+		HumanCard(samochod),
+		HumanCard(dziura),
+
+		HumanCard(betonowe_buty)
+	};
+	const Card* GraWZombiakiZasady::getHumanCards() {
+		return (Card*)humanCards;
+	}
+
+	static Zombiak_If	zombiakIf;
+	static Strzal_If	strzalIf;
+	static Kot_If		kotIf;
+	static Pies_If		piesIf;
+
+	static std::map<Card, Card_If*> cardIfs =
+	{
+		{ ZombieCard(zombiak_1),		&zombiakIf },
+		{ ZombieCard(zombiak_2),		&zombiakIf },
+		{ ZombieCard(zombiak_3),		&zombiakIf },
+		{ ZombieCard(zombiak_4),		&zombiakIf },
+		{ ZombieCard(zombiak_5),		&zombiakIf },
+
+		{ ZombieCard(kot),			&kotIf },
+		{ ZombieCard(pies),			&piesIf },
+
+		{ HumanCard(strzal),			&strzalIf },
+		{ HumanCard(lepszy_strzal),	&strzalIf },
+	};
+
+	Card_If* GraWZombiakiZasady::getCardIf(Card card)
+	{
+		return cardIfs[card];
 	}
 }

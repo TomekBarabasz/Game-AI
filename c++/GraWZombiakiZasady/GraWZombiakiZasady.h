@@ -2,143 +2,134 @@
 #include "GameRules.h"
 #include "object_pool.h"
 #include "Karty.h"
+#include "Plansza.h"
+#include "object_pool_multisize.h"
 
 namespace GraWZombiaki
 {
-	struct Pole
-	{
-		uint8_t idx;
-		uint8_t size;
-	};
-
-	struct Plansza
-	{
-		Pole cards[4][5];
-	};
-
-	using Karta = uint8_t;
-
-	struct Karta_na_planszy
-	{
-		Gracz gracz : 1;
-		uint8_t dummy1: 7;
-		uint8_t dummy2;
-		uint8_t dummy3;
-	};
-	struct KartaZombie_na_planszy
-	{
-		Gracz gracz : 1;
-		enum TypZombie : uint8_t
-		{
-			zwykly,
-			kot,
-			pies,
-			krystyna,
-			kon_trojanski,
-			kuloodporny,
-			galareta,
-			zeton_po_galarecie,
-			syjamczyk,
-			mlody
-		} typ : 4;
-		
-		uint8_t	ma_czlowieka : 1;
-		uint8_t	jest_bossem : 1;
-		uint8_t	ma_misia : 1;
-		uint8_t sila : 5;	//iwan 5 + dwa od galarety + masa (młody 6) + masa (4) + pazury
-		uint8_t	ma_betonowe_buty : 1;
-		uint8_t	jest_zasieciowany : 1;
-		uint8_t rany : 5;
-	};
-	struct KartaLudzi_na_planszy
-	{
-		Gracz gracz : 1;
-		enum TypKarty : uint8_t
-		{
-			dziura,
-			beczka,
-			samochod,
-			mur_slaby,
-			mur_mocny,
-			zapora,
-		} typ : 4;
-	};
-
-	enum class Phase : uint8_t {
+	static const int NumZombieCards = 40;
+	static const int NumHumanCards = 40;
+	static const int NumCards = 40;
+	
+	enum Phase : uint8_t {
 		clenup,
-		movement,	//cat, dog, zombie, human ?
+		cat_movement,
+		dog_movement,
+		movement,
 		take_cards,
 		discard_cards,
 		play_1st_card,
 		play_2nd_card,
 		play_3rd_card
 	};
-	static const int NumZombieCards = 40;
-	static const int NumHumanCards = 40;
-	static const int MaxNumCardsonBoard = 24;	//20 miejsc + kot + pies + dzura + zeton_po_galarecie
+
+	struct Deck
+	{
+		union {
+			struct {
+				uint16_t firstVisible : 4;
+				uint16_t numVisible : 4;
+			};
+			uint16_t value;
+		};
+		Card		cards[NumCards];
+		void discard(unsigned idx);
+	};
 }
 
 using namespace GraWZombiaki;
 struct GameState
 {
-	Plansza plansza;
-	Phase	phase;
+	Plansza		plansza;
+	Deck		zombieDeck;
+	Deck		humanDeck;	
+	uint8_t		phase : 7;
+	uint8_t		current_player : 1;
 
-	uint8_t current_player : 1;
-	uint8_t terror : 1;				//ludzie zagrywają tylko jedną kartę
-	uint8_t zombie_stop : 1;		//zombie nie wykonują ruchu
-	uint8_t aktywacja_misia : 1;	//ludzie odrzucają dwie karty
-
-	uint8_t cmentarz_idx : 6;
-	uint8_t cmentarz_cnt : 2;
-
-	uint8_t barykada_idx : 6;
-	uint8_t barykada_cnt : 2;
-
-	uint8_t ludzie_talia_idx;
-	uint8_t zombie_talia_idx;
-	Karta_na_planszy karty_na_planszy[MaxNumCardsonBoard];
-	Karta ludzie[NumHumanCards];
-	Karta zombie[NumZombieCards];
+	Deck& getPlayerDeck(int player) { return player == Player::zombie ? zombieDeck : humanDeck;	}
+	const Deck& getPlayerDeck(int player) const { return player == Player::zombie ? zombieDeck : humanDeck;	}
 };
 
 struct Move
 {
-	enum Operation : uint8_t { noop, dobierz_karty, odrzuc_karte, zagraj_karte, aktywuj_karte } operation;
+	enum Operation : uint8_t { noop, draw_cards, discard_card, play_card, use_card, move_cat, move_dog };
+	union {
+		struct {
+			uint16_t op : 3;
+			uint16_t params : 13;
+		};
+		uint16_t value;
+	};
 };
-struct Move_take_cards : Move
+
+struct Mv_DrawCards : Move
 {
-	uint8_t num_cards;
-	uint8_t pad;
+	Mv_DrawCards(unsigned cnt)
+	{
+		op = Operation::draw_cards;
+		params = cnt;
+	}
+	unsigned getCardsCnt() const { return params; }
 };
-struct Move_discard_card : Move
+
+struct Mv_DiscardCard : Move
 {
-	uint8_t card;
-	uint8_t pad;
+	Mv_DiscardCard(unsigned idx)
+	{
+		op = Operation::discard_card;
+		params = idx;
+	}
+	unsigned getCardIdx() const { return params; }
 };
-struct Move_play_card : Move
+
+struct Mv_PlayCard : Move
 {
-	uint8_t przecznica : 4;
-	uint8_t tor : 4;
-	uint8_t card;
+	union Value {
+		struct {
+			uint16_t op			: 3;
+			uint16_t przecznica : 3;
+			uint16_t tor		: 2;
+			uint16_t cardIdx		: 8;
+		};
+		uint16_t value;
+	};
+	Mv_PlayCard(uint16_t przecznica, uint16_t tor, uint16_t cardIdx)
+	{
+		Value v;
+		v.przecznica = przecznica;
+		v.tor = tor;
+		v.cardIdx = cardIdx;
+		value = v.value;
+	}
+	std::tuple<uint16_t, uint16_t, uint16_t> get() const
+	{
+		auto & val = *(Value*)&value;
+		return { val.przecznica, val.tor, val.cardIdx };
+	}
 };
-struct Move_activate_card : Move
+
+struct Mv_UseCard : Move
 {
-	uint8_t card;
-	uint8_t pad;
+	Mv_UseCard(unsigned idx)
+	{
+		op = Operation::use_card;
+		params = idx;
+	}
+	unsigned getCardIdx() const { return params; }
 };
-struct Move_noop : Move
+
+struct Mv_noop : Move
 {
-	uint8_t pad1;
-	uint8_t pad2;
+	Mv_noop()
+	{
+		op = Operation::noop;
+	}
 };
+
 struct MoveList
 {
-	union {
-		unsigned short	size;
-		Move_noop		dummy;
-	};
-	Move_noop move[1];
+	uint16_t size;
+	Move move[1];
 };
 
 namespace GraWZombiaki
@@ -148,11 +139,10 @@ namespace GraWZombiaki
 		GraWZombiakiZasady()
 		{
 			m_noop.size = 1;
-			m_noop.move[0].operation = Move::noop;
+			m_noop.move[0].op = Move::noop;
 		}
 		~GraWZombiakiZasady()
 		{
-
 		}
 
 		void SetRandomGenerator(IRandomGenerator*) override;
@@ -192,26 +182,32 @@ namespace GraWZombiaki
 		void freeGameState(GameState* s) {
 			m_GameStatePool.free(s);
 		}
-		static const unsigned char* getZombieCards();
-		static const unsigned char* getHumanCards();
-		MoveList* get_moves_in_pase_clenup(const GameState*);
-		MoveList* get_moves_in_pase_cat_movement(const GameState*);
-		MoveList* get_moves_in_pase_dog_movement(const GameState*);
-		MoveList* get_moves_in_pase_general_movement(const GameState*);
-		MoveList* get_moves_in_pase_take_cards(const GameState*);
-		MoveList* get_moves_in_pase_discard_cards(const GameState*);
-		MoveList* get_moves_in_pase_play_1st_card(const GameState*);
-		MoveList* get_moves_in_pase_play_2nd_card(const GameState*);
-		MoveList* get_moves_in_pase_play_3rd_card(const GameState*);
 
-		GameState* dobierzKarty(const GameState* gs, uint8_t num_cards, int player);
-		GameState* odrzucKarte(const GameState* gs, uint8_t card, int player);
-		GameState* zagrajKarte(const GameState* gs, Move_play_card* move_play_card, int player);
-		GameState* aktywujKarte(const GameState* gs, Move_activate_card* mv, int player);
+		MoveList* allocMoveList(unsigned numMoves);
+		void freeMoveList(MoveList*);
+		
+		static const Card* getZombieCards();
+		static const Card* getHumanCards();
+		MoveList* get_moves_in_phase_clenup(const GameState*);
+		MoveList* get_moves_in_phase_cat_movement(const GameState*);
+		MoveList* get_moves_in_phase_dog_movement(const GameState*);
+		MoveList* get_moves_in_phase_general_movement(const GameState*);
+		MoveList* getMovesInPhaseTakeCards(const GameState*);
+		MoveList* getMovesInPhaseDiscardCards(const GameState*);
+		MoveList* moveListFromVector(vector<uint16_t> moves);
+		MoveList* getMovesInPhasePlayCard(const GameState*);
+
+		GameState* drawCards(const GameState* gs, uint8_t numCards, int player);
+		GameState* discardCard(const GameState* gs, uint8_t discardedCardIdx, int player);
+		Card_If*   getCardIf(Card card);
+		GameState* playCard(const GameState* gs, Mv_PlayCard* mv, int player);
+		GameState* useCard(const GameState* gs, unsigned cardIdx, int player);
 
 		using GetMoveListMethod_t = MoveList * (GraWZombiakiZasady::*)(const GameState*);
 		static GetMoveListMethod_t getMovesInState[];
+
 		ObjectPoolBlocked<GameState, 512>		m_GameStatePool;
+		ObjectPoolMultisize<4 * sizeof(Move), 4096> m_moveListPool;
 		MoveList m_noop;
 	};
 }
