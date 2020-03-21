@@ -30,6 +30,15 @@
     <ClInclude Include="Plansza.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Moves.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Karty_if.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GraWZombiakiZasady.cpp">
@@ -48,6 +57,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Plansza.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Karty_def.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="game_phases.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

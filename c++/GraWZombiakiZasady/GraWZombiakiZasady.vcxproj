@@ -154,16 +154,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Common.h" />
     <ClInclude Include="GraWZombiakiZasady.h" />
     <ClInclude Include="Karty.h" />
+    <ClInclude Include="Karty_if.h" />
+    <ClInclude Include="Moves.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Plansza.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\common\utils\dllmain.cpp" />
+    <ClCompile Include="game_phases.cpp" />
     <ClCompile Include="GraWZombiakiZasady.cpp" />
     <ClCompile Include="Karty.cpp" />
+    <ClCompile Include="Karty_def.cpp" />
     <ClCompile Include="pch_gwz.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

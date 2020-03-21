@@ -2,13 +2,18 @@
 #include <cstdint>
 #include <functional>
 #include <vector>
+#include "Common.h"
+#include <cassert>
 
 struct GameState;
 struct MoveList;
 
 namespace GraWZombiaki
 {
-	enum Player : uint8_t { zombie = 0, human = 1 };
+	static const int NumZombieCards = 40;
+	static const int NumHumanCards = 40;
+	static const int NumCards = 40;
+
 	enum TypKarty : uint8_t { obiekt = 0, wzmocnienie, akcja };
 	
 	enum ObiektLudzi : uint8_t
@@ -17,9 +22,9 @@ namespace GraWZombiaki
 	};
 	enum ObiektZombie : uint8_t
 	{
-		zombiak_1, zombiak_2, zombiak_3, zombiak_4, zombiak_5,
-		kot, pies,
-		krystyna, kon_trojanski, kuloodporny, galareta, syjamczyk, mlody
+		zombiak_1=1,
+		kot, pies, krystyna, kon_trojanski, kuloodporny, galareta, syjamczyk, mlody,
+		zombiak_2, zombiak_3, zombiak_4, zombiak_5,
 	};
 	enum AkcjaLudzi : uint8_t
 	{
@@ -72,8 +77,40 @@ namespace GraWZombiaki
 
 	struct Card_If
 	{
-		virtual unsigned  getValidApplications	(const GameState* gs, Card card, std::vector<uint16_t>& moves) = 0;
-		virtual void	  play					(GameState* gs, unsigned przecznica, unsigned tor, Card card) = 0;
-		virtual void	  use					(GameState* gs, Card card) = 0;
+		//get valid usage is called when card will be played from deck
+		//and will produce valid moves that will result in a call to place or use
+		virtual void	getValidUsage	(const GameState* gs, unsigned cardIdx, MoveList_t& moves) = 0;
+		virtual void	place			(GameState* gs, Position where, unsigned cardIdx) = 0;
+		virtual void	use				(GameState* gs, unsigned cardIdx) = 0;
+
+		//get valid moves is called when card in on the board and has options to move (like a cat or dog)
+		//this call will produce valid moves that wil result in a call to move
+		virtual void	getValidMoves	(const GameState* gs, Position p, MoveList_t& moves) = 0;
+		virtual	void	move			(GameState* gs, Position from, Position to) = 0;
+		
+		virtual void	hit				(GameState* gs, Position where) = 0;
+	};
+
+	struct Deck
+	{
+		union {
+			struct {
+				uint16_t firstVisible : 4;
+				uint16_t numVisible : 4;
+			};
+			uint16_t value;
+		};
+		Card cards[NumCards];
+		void discard(unsigned idx)
+		{
+			assert(idx >= unsigned(firstVisible) && idx < unsigned(firstVisible + numVisible));
+			if (idx > firstVisible) {
+				Card tmp = cards[firstVisible];
+				cards[firstVisible] = cards[idx];
+				cards[idx] = tmp;
+			}
+			firstVisible += 1;
+			numVisible -= 1;
+		}
 	};
 }
