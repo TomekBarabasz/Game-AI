@@ -55,9 +55,89 @@ namespace GraWZombiaki
 	
 	struct GamePhaseMovement : GamePhase
 	{
+		void moveSingleZombie(Plansza& plansza, unsigned tor, int p, KartaNaPlanszy& k_src)
+		{
+			if (k_src.bf_typ >= KartaNaPlanszy::zombiak && k_src.bf_typ <= KartaNaPlanszy::mlody && !k_src.bf_jest_zasieciowany)
+			{ 
+				auto& k_dst = plansza[{unsigned(p) + 1, tor}];
+				bool moved = false;
+				if (KartaNaPlanszy::puste_miejsce == k_dst.bf_typ)
+				{
+					k_dst = k_src;
+					k_src.bf_typ = KartaNaPlanszy::puste_miejsce;
+					moved = true;
+				}
+				else if (KartaNaPlanszy::mur == k_dst.bf_typ)
+				{
+					int sila_muru = int(k_dst.bf_sila) - int(k_src.bf_sila);
+					unsigned p2 = p;
+					while(p2 > 0)
+					{
+						--p2;
+						auto& k_p2 = plansza[{p2, tor}];
+						if (k_p2.bf_typ >= KartaNaPlanszy::zombiak && k_p2.bf_typ <= KartaNaPlanszy::mlody && !k_p2.bf_jest_zasieciowany) {
+							sila_muru -= int(k_p2.bf_sila);
+						}else {
+							break;
+						}
+					}
+					if (sila_muru <= 0)	{
+						k_dst = k_src;
+						k_src.bf_typ = KartaNaPlanszy::puste_miejsce;
+						moved = true;
+					}
+				}
+				if (moved && k_dst.bf_typ==KartaNaPlanszy::mlody) {
+					k_dst.bf_sila += 1;
+				}
+			}
+		}
+
+		void moveZombies(Plansza& plansza)
+		{
+			KartaNaPlanszy kot{ Player::zombie, KartaNaPlanszy::puste_miejsce };
+			Position pos_kota;
+			for (unsigned tor = 0; tor < Plansza::Columns; ++tor) {
+				if (plansza.zapora & (1 << tor)) continue;
+				for (signed p = Plansza::Rows - 2; p >= 0; --p) {
+					Position src_pos = {unsigned(p), tor};
+					auto& k_src = plansza[src_pos];
+					if (KartaNaPlanszy::kot == k_src.bf_typ)
+					{
+						kot = k_src;
+						k_src = plansza.karta_pod_kotem;
+						pos_kota = src_pos;
+					}
+					moveSingleZombie(plansza, tor, p, k_src);
+				}
+			}
+			if (KartaNaPlanszy::kot == kot.bf_typ) {
+				auto& k_kot = plansza[pos_kota];
+				plansza.karta_pod_kotem = k_kot;
+				k_kot = kot;
+			}
+		}
+		void moveHuman(Plansza& plansza)
+		{
+			auto [pos, found] = plansza.findByType(KartaNaPlanszy::beczka);
+			if (found)
+			{
+				
+			}
+		}
+
+		void moveCards(GameState* gs)
+		{
+			if (Player::zombie == gs->current_player) {
+				moveZombies(gs->plansza);
+			}else {
+				moveHuman(gs->plansza);
+			}
+		}
+
 		void nextPhase(GameState* gs) override
 		{
-			gs->plansza.moveCards();
+			moveCards(gs);
 
 			//draw new cards
 			auto& deck = gs->getPlayerDeck(gs->current_player);

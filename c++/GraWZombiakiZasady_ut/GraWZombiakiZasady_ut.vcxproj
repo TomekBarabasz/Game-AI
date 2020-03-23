@@ -101,7 +101,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Software\lib\boost_1_71_0\stage\lib;$(SolutionDir)GraWZombiakiZasady\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>GraWZombiakiZasady.obj;Plansza.obj;Akcje.obj;Karty.obj;pch_gwz.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>GraWZombiakiZasady.obj;Plansza.obj;Akcje.obj;Karty.obj;Karty_def.obj;game_phases.obj;pch_gwz.obj;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -135,7 +135,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Software\lib\boost_1_71_0\stage\lib;$(SolutionDir)GraWZombiakiZasady\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>GraWZombiakiZasady.obj;Plansza.obj;Akcje.obj;Karty.obj;pch_gwz.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>GraWZombiakiZasady.obj;Plansza.obj;Akcje.obj;Karty.obj;Karty_def.obj;game_phases.obj;pch_gwz.obj;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -158,9 +158,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="GraWZombiakiZasady_ut.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GraWZombiakiZasady_karty_ut.cpp" />
+    <ClCompile Include="GraWZombiakiZasady_plansza_ut.cpp" />
     <ClCompile Include="GraWZombiakiZasady_ut.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

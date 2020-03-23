@@ -28,11 +28,6 @@ namespace GraWZombiaki
 		return { p,false };
 	}
 
-	void Plansza::removeZapora()
-	{
-		zapora = 0;
-	}
-
 	void Plansza::removeNet()
 	{
 		for (int p= 0; p < Rows; ++p)

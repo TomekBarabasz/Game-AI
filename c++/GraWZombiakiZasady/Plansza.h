@@ -17,7 +17,7 @@ namespace GraWZombiaki
 			bf_typ = t;
 		}
 		enum Typ {	puste_miejsce,
-					zombiak, kot, pies, krystyna, kon_trojanski, kuloodporny, galareta, syjamczyk, mlody,
+					kot, pies, zombiak, krystyna, kon_trojanski, kuloodporny, galareta, syjamczyk, mlody,
 					mur, beczka, mina, samochod, dziura };
 		
 		union {
@@ -65,7 +65,7 @@ namespace GraWZombiaki
 		std::tuple<Position, bool> findByMask(uint16_t mask, Position start={0,0}) const;
 		KartaNaPlanszy& operator[](Position p) { return cards[p.przecznica][p.tor]; }
 		const KartaNaPlanszy& operator[](Position p) const { return cards[p.przecznica][p.tor]; }
-		void removeZapora();
+		void removeZapora()	{ zapora = 0; }
 		void removeNet();
 		//isTerminal return true if there's at least one free to move zombie in 5th przecznica
 		bool isTerminal() const;

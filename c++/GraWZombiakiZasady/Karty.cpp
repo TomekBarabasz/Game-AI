@@ -39,9 +39,9 @@ namespace GraWZombiaki
 		static const uint8_t typ2podtyp[] =
 		{
 			/*puste_miejsce*/0,
-			/*zombiak*/ObiektZombie::zombiak_1,
 			/*kot*/ObiektZombie::kot,
 			/*pies*/ObiektZombie::pies,
+			/*zombiak*/ObiektZombie::zombiak_1,
 			/*krystyna*/ObiektZombie::krystyna,
 			/*kon_trojanski*/ObiektZombie::kon_trojanski,
 			/*kuloodporny*/ObiektZombie::kuloodporny,
